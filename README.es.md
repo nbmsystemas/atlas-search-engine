@@ -147,11 +147,11 @@ pytest -v          # 19 passed
 - **Frontend en Vercel**: importá el repositorio, configurá `frontend` como
   *Root Directory* y publicá como sitio estático. `vercel.json` también
   permite desplegar desde la raíz con `vercel --prod`.
-- **CORS**: `ATLAS_ALLOWED_ORIGINS` acepta una lista separada por comas. Para
-  producción, reemplazá `*` por la URL real de Vercel en la configuración del
-  servicio de Render.
-- La demo de Vercel ya está publicada en
-  `https://atlas-search-engine-kappa.vercel.app`. Después de crear el servicio
+- **CORS**: `render.yaml` ya configura `ATLAS_ALLOWED_ORIGINS` con
+  `https://atlas.nbmsystemas.com`. Podés agregar más orígenes separados por
+  comas si usás un preview de Vercel.
+- La demo ya está publicada en
+  `https://atlas.nbmsystemas.com`. Después de crear el servicio
   de Render, verificá el endpoint y completá el link de Swagger del encabezado.
   La interfaz usa automáticamente localhost en desarrollo y el servicio Render
   en producción.

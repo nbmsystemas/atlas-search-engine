@@ -8,4 +8,4 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: ATLAS_ALLOWED_ORIGINS
-        value: "*"
+        value: "https://atlas.nbmsystemas.com"

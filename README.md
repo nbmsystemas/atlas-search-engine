@@ -148,7 +148,7 @@ The [`render.yaml`](render.yaml) Blueprint defines the Docker service, health ch
 1. Open the [direct Render deploy](https://render.com/deploy?repo=https://github.com/nbmsystemas/atlas-search-engine).
 2. Authorize GitHub and confirm the Blueprint.
 3. Verify `https://atlas-search-engine-api.onrender.com/api/health` returns `{"status":"ok"}`.
-4. Set `ATLAS_ALLOWED_ORIGINS` to the actual Vercel URL instead of `*`.
+4. The Blueprint already sets `ATLAS_ALLOWED_ORIGINS` to `https://atlas.nbmsystemas.com`.
 
 ### Frontend on Vercel
 
