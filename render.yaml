@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: atlas-search-engine-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: ATLAS_ALLOWED_ORIGINS
+        value: "*"

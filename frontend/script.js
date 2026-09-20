@@ -1,6 +1,13 @@
-// Apunta a la API. En desarrollo local es localhost:8000; en producción,
-// reemplazar por la URL del backend deployado (ver README).
-const API_BASE = window.ATLAS_API_BASE || "http://localhost:8000";
+// The static frontend keeps the API URL configurable at runtime. Local Docker
+// uses localhost; the production fallback points to the Render service defined
+// in render.yaml. Set window.ATLAS_API_BASE before this script to override it.
+const localHosts = new Set(["localhost", "127.0.0.1"]);
+const defaultApiBase = localHosts.has(window.location.hostname)
+  ? "http://localhost:8000"
+  : "https://atlas-search-engine-api.onrender.com";
+const API_BASE = window.ATLAS_API_BASE || defaultApiBase;
+const docsLink = document.getElementById("api-docs-link");
+if (docsLink) docsLink.href = `${API_BASE}/docs`;
 
 const form = document.getElementById("search-form");
 const input = document.getElementById("query");
@@ -15,12 +22,17 @@ async function loadStats() {
   try {
     const res = await fetch(`${API_BASE}/api/stats`);
     const data = await res.json();
-    statsEl.innerHTML =
-      `<b>${data.documents_indexed}</b> docs · ` +
-      `<b>${data.vocabulary_size}</b> términos · ` +
-      `p95 <b>${data.p95_latency_ms.toFixed(2)}ms</b> · ` +
-      `<b>${data.total_queries_served}</b> queries servidas`;
-  } catch (err) {
+    statsEl.replaceChildren(
+      strongText(data.documents_indexed),
+      document.createTextNode(" docs · "),
+      strongText(data.vocabulary_size),
+      document.createTextNode(" términos · p95 "),
+      strongText(`${data.p95_latency_ms.toFixed(2)}ms`),
+      document.createTextNode(" · "),
+      strongText(data.total_queries_served),
+      document.createTextNode(" queries servidas"),
+    );
+  } catch {
     statsEl.textContent = "no se pudo conectar con la API — ¿está corriendo el backend?";
   }
 }
@@ -29,13 +41,13 @@ async function loadCategories() {
   try {
     const res = await fetch(`${API_BASE}/api/categories`);
     const data = await res.json();
-    categoriesEl.innerHTML = "";
+    categoriesEl.replaceChildren();
     const allChip = makeChip("todas", null);
     categoriesEl.appendChild(allChip);
     data.categories.forEach((cat) => {
       categoriesEl.appendChild(makeChip(cat, cat));
     });
-  } catch (err) {
+  } catch {
     /* silencioso: sin categorías si la API no responde */
   }
 }
@@ -54,14 +66,31 @@ function makeChip(label, value) {
   return chip;
 }
 
+function strongText(value) {
+  const element = document.createElement("b");
+  element.textContent = value;
+  return element;
+}
+
 function renderEmpty(message) {
-  resultsEl.innerHTML = `<div class="empty-state">${message}</div>`;
+  const empty = document.createElement("div");
+  empty.className = "empty-state";
+  empty.textContent = message;
+  resultsEl.replaceChildren(empty);
 }
 
 function renderResults(data) {
-  metaEl.innerHTML =
-    `${data.total_results} resultado${data.total_results === 1 ? "" : "s"} · ` +
-    `<span class="latency">${data.latency_ms.toFixed(3)} ms</span>`;
+  metaEl.replaceChildren(
+    document.createTextNode(
+      `${data.total_results} resultado${data.total_results === 1 ? "" : "s"} · `,
+    ),
+    (() => {
+      const latency = document.createElement("span");
+      latency.className = "latency";
+      latency.textContent = `${data.latency_ms.toFixed(3)} ms`;
+      return latency;
+    })(),
+  );
 
   if (data.results.length === 0) {
     renderEmpty("Sin resultados. Probá con otros términos.");
@@ -69,32 +98,42 @@ function renderResults(data) {
   }
 
   const maxScore = Math.max(...data.results.map((r) => r.score), 1);
+  const resultNodes = data.results.map((result) => {
+    const pct = Math.max(6, Math.round((result.score / maxScore) * 100));
+    const article = document.createElement("article");
+    article.className = "result";
 
-  resultsEl.innerHTML = data.results
-    .map((r) => {
-      const pct = Math.max(6, Math.round((r.score / maxScore) * 100));
-      return `
-        <article class="result">
-          <div class="result-head">
-            <span class="result-title">${escapeHtml(r.title)}</span>
-            <span class="result-category">${escapeHtml(r.category)}</span>
-          </div>
-          <p class="result-snippet">${escapeHtml(r.snippet)}</p>
-          <div class="score-row">
-            <div class="score-bar-track">
-              <div class="score-bar-fill" style="width:${pct}%"></div>
-            </div>
-            <span class="score-value">bm25 = ${r.score.toFixed(3)}</span>
-          </div>
-        </article>`;
-    })
-    .join("");
-}
+    const header = document.createElement("div");
+    header.className = "result-head";
+    const title = document.createElement("span");
+    title.className = "result-title";
+    title.textContent = result.title;
+    const category = document.createElement("span");
+    category.className = "result-category";
+    category.textContent = result.category;
+    header.append(title, category);
 
-function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
+    const snippet = document.createElement("p");
+    snippet.className = "result-snippet";
+    snippet.textContent = result.snippet;
+
+    const scoreRow = document.createElement("div");
+    scoreRow.className = "score-row";
+    const track = document.createElement("div");
+    track.className = "score-bar-track";
+    const fill = document.createElement("div");
+    fill.className = "score-bar-fill";
+    fill.style.width = `${pct}%`;
+    track.appendChild(fill);
+    const score = document.createElement("span");
+    score.className = "score-value";
+    score.textContent = `bm25 = ${result.score.toFixed(3)}`;
+    scoreRow.append(track, score);
+
+    article.append(header, snippet, scoreRow);
+    return article;
+  });
+  resultsEl.replaceChildren(...resultNodes);
 }
 
 async function runSearch(query) {
@@ -106,7 +145,7 @@ async function runSearch(query) {
     const data = await res.json();
     renderResults(data);
     loadStats();
-  } catch (err) {
+  } catch {
     metaEl.textContent = "";
     renderEmpty("No se pudo conectar con la API. Revisá que el backend esté corriendo.");
   }

@@ -5,14 +5,14 @@ ranking **BM25** (el mismo algoritmo que usa Elasticsearch por default),
 expuesto vía una API REST y una consola web que muestra latencia real en
 cada búsqueda.
 
-[![CI](https://github.com/TU_USUARIO/atlas-search-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/TU_USUARIO/atlas-search-engine/actions)
+[![CI](https://github.com/nbmsystemas/atlas-search-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/nbmsystemas/atlas-search-engine/actions)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**[▶ Probar la demo en vivo](#)** &nbsp;·&nbsp; **[Documentación de la API (Swagger)](#)** &nbsp;·&nbsp; [Arquitectura](docs/architecture.md)
+**Demo en vivo: pendiente de deploy** &nbsp;·&nbsp; **Swagger: pendiente de deploy** &nbsp;·&nbsp; [Arquitectura](docs/architecture.md)
 
-> Reemplazá los links de arriba una vez que hagas el deploy (ver sección
-> "Deploy" más abajo). Un repo con links rotos es peor que no tenerlos.
+> Los links públicos se agregan únicamente después de verificar las URLs reales
+> de Render y Vercel. No se publican URLs inventadas.
 
 ---
 
@@ -27,7 +27,7 @@ solo la integración con una API externa.
 ## Cómo probarlo en 60 segundos
 
 ```bash
-git clone https://github.com/TU_USUARIO/atlas-search-engine.git
+git clone https://github.com/nbmsystemas/atlas-search-engine.git
 cd atlas-search-engine
 docker compose up --build
 ```
@@ -76,9 +76,9 @@ corpus de demo, single process, sin caché:
 ```text
 Documents indexed:     44
 Vocabulary size:       648
-Avg query latency:     0.02 ms
-P95 latency:           0.03 ms
-Throughput:            64,784 queries/sec (single process, sin caché)
+Avg query latency:     0.03 ms
+P95 latency:           0.05 ms
+Throughput:            37,413 queries/sec (single process, sin caché)
 ```
 
 > Estos números son bajos en absoluto porque el corpus de demo es chico
@@ -138,12 +138,19 @@ pytest -v          # 19 passed
 
 ## Deploy
 
-- **Backend** (`backend/Dockerfile`): Railway, Render o Fly.io — cualquiera
-  de los tres tiene free tier y deploya un Dockerfile sin configuración
-  extra. Después de deployar, actualizá `ATLAS_API_BASE` en
-  `frontend/script.js` (o pasalo como variable global antes de cargar el
-  script) con la URL pública del backend.
-- **Frontend**: Vercel, Netlify o GitHub Pages (es HTML/CSS/JS estático).
+- **Backend en Render**: el archivo [`render.yaml`](render.yaml) define el
+  servicio Docker, el healthcheck y el nombre `atlas-search-engine-api`.
+  Importá el repositorio en Render como Blueprint y verificá
+  `https://atlas-search-engine-api.onrender.com/api/health`.
+- **Frontend en Vercel**: importá el repositorio, configurá `frontend` como
+  *Root Directory* y publicá como sitio estático. `vercel.json` también
+  permite desplegar desde la raíz con `vercel --prod`.
+- **CORS**: `ATLAS_ALLOWED_ORIGINS` acepta una lista separada por comas. Para
+  producción, reemplazá `*` por la URL real de Vercel en la configuración del
+  servicio de Render.
+- Una vez verificadas ambas URLs, reemplazá los dos links `#` del encabezado y
+  el link de Swagger del frontend. La interfaz usa automáticamente localhost
+  en desarrollo y el servicio Render en producción.
 
 ## Licencia
 

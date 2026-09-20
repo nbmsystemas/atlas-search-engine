@@ -12,8 +12,10 @@ Cada búsqueda mide su propia latencia con time.perf_counter() y la devuelve
 en la respuesta, para que la demo muestre números reales, no inventados.
 """
 
+import os
 import time
 from collections import deque
+from math import ceil
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,9 +32,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("ATLAS_ALLOWED_ORIGINS", "*").split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins or ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -112,7 +120,8 @@ def categories():
 def stats():
     latencies = sorted(_latency_window)
     avg = sum(latencies) / len(latencies) if latencies else 0.0
-    p95 = latencies[int(len(latencies) * 0.95) - 1] if latencies else 0.0
+    p95_index = max(0, ceil(len(latencies) * 0.95) - 1)
+    p95 = latencies[p95_index] if latencies else 0.0
 
     return StatsResponse(
         documents_indexed=_index.total_documents,
