@@ -8,9 +8,136 @@ const defaultApiBase = localHosts.has(window.location.hostname)
 const apiOverride = new URLSearchParams(window.location.search).get("api");
 const API_BASE = (apiOverride || window.ATLAS_API_BASE || defaultApiBase).replace(/\/$/, "");
 
+const translations = {
+  en: {
+    pageTitle: "Atlas — Search Engine Console",
+    eyebrow: "search engine built from scratch — tokenizer, inverted index, BM25 ranking",
+    introTitle: "See how a search engine thinks.",
+    introCopy: "Explore 44 preloaded technical documents about algorithms, databases, systems, security, DevOps, and more. No account or upload is needed: choose an example or write your own query.",
+    retry: "retry connection",
+    healthcheck: "view healthcheck",
+    searchButton: "search",
+    placeholder: "try 'inverted index' or 'API security'…",
+    quickStart: "start here",
+    quickIndex: "inverted index",
+    quickSecurity: "API security",
+    quickDevops: "Docker and CI/CD",
+    quickSemantic: "semantic search",
+    helpSummary: "How do I try this?",
+    helpHint: "a quick guide for curious and technical visitors",
+    quickGuideTitle: "For a quick first result",
+    quickGuideOne: "Choose a suggested query or type two or three words.",
+    quickGuideTwo: "Use categories to narrow the corpus.",
+    quickGuideThree: "Compare the BM25 score and real response latency.",
+    tryLabel: "Try",
+    orLabel: "or",
+    technicalGuideTitle: "For technical reviewers and recruiters",
+    technicalGuideOne: "The demo corpus loads automatically when the API starts.",
+    technicalGuideTwo: "The ranking path is built from scratch: tokenizer, inverted index, and BM25.",
+    technicalGuideThree: "Each response includes real latency;",
+    openSwagger: "open Swagger",
+    technicalGuideFour: "to explore the endpoints.",
+    viewGithub: "view code on GitHub",
+    viewArchitecture: "view architecture",
+    categoryHeading: "filter by topic",
+    optional: "optional",
+    allCategories: "all topics",
+    viewSource: "source code on GitHub",
+    apiDocs: "API documentation (Swagger)",
+    builtBy: "Built by nbmsystemas",
+    authorBio: "Backend engineering · Search systems · Practical software craftsmanship",
+    juniorMessage: "For junior engineers: learn to ship the whole system—tests, observability, documentation, reproducible deployments, and honest trade-offs.",
+    apiOffline: "API offline · the corpus is waiting for the backend",
+    backendUnavailable: "The backend is unavailable",
+    frontendOnline: "The frontend is online, but it needs the API to search.",
+    backendUnavailableDetail: "The frontend is published, but the API is not responding at {api}. The preloaded corpus lives in the backend, so searching starts when the service is online.",
+    stillUnavailable: "The API is still not responding at {api}. If this is a Render preview, check that the service is running.",
+    searching: "searching…",
+    resultNeedsApi: "The search needs the API to be available. Use “retry connection”.",
+    searchFailed: "The API could not process this search at {api}. Try again when the backend is online.",
+    noResults: "No results. Try a different query.",
+    oneResult: "1 result",
+    manyResults: "{count} results",
+    statsDocs: " docs · ",
+    statsTerms: " terms · p95 ",
+    statsQueries: " queries served",
+    connecting: "connecting…",
+  },
+  es: {
+    pageTitle: "Atlas — Consola de búsqueda",
+    eyebrow: "motor de búsqueda construido desde cero — tokenizer, índice invertido, ranking BM25",
+    introTitle: "Probá cómo piensa un buscador.",
+    introCopy: "Explorá 44 documentos técnicos precargados sobre algoritmos, bases de datos, sistemas, seguridad, DevOps y más. No necesitás crear una cuenta ni cargar datos: elegí un ejemplo o escribí tu propia consulta.",
+    retry: "reintentar conexión",
+    healthcheck: "ver healthcheck",
+    searchButton: "buscar",
+    placeholder: "probá con 'índice invertido' o 'seguridad API'…",
+    quickStart: "empezá por acá",
+    quickIndex: "índice invertido",
+    quickSecurity: "seguridad API",
+    quickDevops: "Docker y CI/CD",
+    quickSemantic: "búsqueda semántica",
+    helpSummary: "¿Cómo pruebo esto?",
+    helpHint: "guía rápida para curiosos y técnicos",
+    quickGuideTitle: "Para ver un resultado rápido",
+    quickGuideOne: "Elegí una consulta sugerida o escribí dos o tres palabras.",
+    quickGuideTwo: "Usá las categorías para acotar el corpus.",
+    quickGuideThree: "Compará el score BM25 y la latencia real de la respuesta.",
+    tryLabel: "Probá",
+    orLabel: "o",
+    technicalGuideTitle: "Para técnicos y recruiters",
+    technicalGuideOne: "El corpus de demo se carga automáticamente al iniciar la API.",
+    technicalGuideTwo: "El ranking está implementado desde cero: tokenizer, índice invertido y BM25.",
+    technicalGuideThree: "Cada respuesta muestra latencia real;",
+    openSwagger: "abrí Swagger",
+    technicalGuideFour: "para explorar los endpoints.",
+    viewGithub: "ver código en GitHub",
+    viewArchitecture: "ver arquitectura",
+    categoryHeading: "filtrá por tema",
+    optional: "opcional",
+    allCategories: "todos los temas",
+    viewSource: "código fuente en GitHub",
+    apiDocs: "documentación de la API (Swagger)",
+    builtBy: "Construido por nbmsystemas",
+    authorBio: "Ingeniería backend · Sistemas de búsqueda · Buenas prácticas de software",
+    juniorMessage: "Para quienes están empezando: aprendan a entregar el sistema completo—tests, observabilidad, documentación, deploys reproducibles y decisiones técnicas honestas.",
+    apiOffline: "API offline · el corpus espera al backend",
+    backendUnavailable: "El backend no está disponible",
+    frontendOnline: "El frontend está online, pero necesita la API para buscar.",
+    backendUnavailableDetail: "El frontend está publicado, pero la API no responde en {api}. El corpus precargado vive en el backend, así que la búsqueda se habilita cuando el servicio está online.",
+    stillUnavailable: "La API sigue sin responder en {api}. Si estás usando un preview de Render, revisá que el servicio esté activo.",
+    searching: "buscando…",
+    resultNeedsApi: "La búsqueda necesita que la API esté disponible. Usá “reintentar conexión”.",
+    searchFailed: "La API no pudo procesar la búsqueda en {api}. Probá de nuevo cuando el backend esté online.",
+    noResults: "Sin resultados. Probá con otra consulta.",
+    oneResult: "1 resultado",
+    manyResults: "{count} resultados",
+    statsDocs: " docs · ",
+    statsTerms: " términos · p95 ",
+    statsQueries: " consultas servidas",
+    connecting: "conectando…",
+  },
+};
+
+let currentLanguage = (() => {
+  try {
+    return localStorage.getItem("atlas-language") === "es" ? "es" : "en";
+  } catch {
+    return "en";
+  }
+})();
+
+function t(key, replacements = {}) {
+  return Object.entries(replacements).reduce(
+    (text, [name, value]) => text.replace(`{${name}}`, value),
+    translations[currentLanguage][key],
+  );
+}
+
 const docsLink = document.getElementById("api-docs-link");
 const helpApiLink = document.getElementById("help-api-link");
 const apiStatusLink = document.getElementById("api-status-link");
+const languageButtons = document.querySelectorAll("[data-language]");
 if (docsLink) docsLink.href = `${API_BASE}/docs`;
 if (helpApiLink) helpApiLink.href = `${API_BASE}/docs`;
 if (apiStatusLink) apiStatusLink.href = `${API_BASE}/api/health`;
@@ -29,6 +156,7 @@ const quickSearches = document.querySelectorAll("[data-query]");
 
 let activeCategory = null;
 let lastQuery = "";
+let latestStats = null;
 
 function apiUrl(path) {
   return `${API_BASE}${path}`;
@@ -41,9 +169,38 @@ function setConnectionState(isOnline, detail = "") {
   }
 
   connectionNotice.hidden = false;
-  connectionTitle.textContent = "El backend no está disponible";
-  connectionMessage.textContent = detail ||
-    `La interfaz está publicada, pero la API no responde en ${API_BASE}. El corpus precargado vive en el backend, así que la búsqueda se habilita cuando el servicio está online.`;
+  connectionTitle.textContent = t("backendUnavailable");
+  connectionMessage.textContent = detail || t("backendUnavailableDetail", { api: API_BASE });
+}
+
+function applyLanguage(language) {
+  currentLanguage = language === "es" ? "es" : "en";
+  document.documentElement.lang = currentLanguage;
+  document.title = t("pageTitle");
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+  input.placeholder = t("placeholder");
+  languageButtons.forEach((button) => {
+    const isActive = button.dataset.language === currentLanguage;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+  quickSearches.forEach((button) => {
+    const query = button.dataset[`query${currentLanguage === "es" ? "Es" : "En"}`];
+    if (query) {
+      button.dataset.query = query;
+      if (button.classList.contains("inline-query")) button.textContent = query;
+    }
+  });
+  try {
+    localStorage.setItem("atlas-language", currentLanguage);
+  } catch {
+    // Private browsing can disable localStorage; the toggle still works.
+  }
+  if (categoriesEl.children.length) loadCategories();
+  if (latestStats) renderStats(latestStats);
+  if (!connectionNotice.hidden) setConnectionState(false);
 }
 
 async function requestJson(path) {
@@ -62,36 +219,41 @@ async function requestJson(path) {
 
 async function checkConnection() {
   retryButton.disabled = true;
-  retryButton.textContent = "conectando…";
+  retryButton.textContent = t("connecting");
   try {
     await requestJson("/api/health");
     setConnectionState(true);
     await Promise.all([loadStats(), loadCategories()]);
     if (lastQuery) runSearch(lastQuery);
   } catch {
-    setConnectionState(false, `La API sigue sin responder en ${API_BASE}. Si estás usando un preview de Render, revisá que el servicio esté activo.`);
+    setConnectionState(false, t("stillUnavailable", { api: API_BASE }));
   } finally {
     retryButton.disabled = false;
-    retryButton.textContent = "reintentar conexión";
+    retryButton.textContent = t("retry");
   }
+}
+
+function renderStats(data) {
+  statsEl.replaceChildren(
+    strongText(data.documents_indexed),
+    document.createTextNode(t("statsDocs")),
+    strongText(data.vocabulary_size),
+    document.createTextNode(t("statsTerms")),
+    strongText(`${data.p95_latency_ms.toFixed(2)}ms`),
+    document.createTextNode(" · "),
+    strongText(data.total_queries_served),
+    document.createTextNode(t("statsQueries")),
+  );
 }
 
 async function loadStats() {
   try {
     const data = await requestJson("/api/stats");
+    latestStats = data;
     setConnectionState(true);
-    statsEl.replaceChildren(
-      strongText(data.documents_indexed),
-      document.createTextNode(" docs · "),
-      strongText(data.vocabulary_size),
-      document.createTextNode(" términos · p95 "),
-      strongText(`${data.p95_latency_ms.toFixed(2)}ms`),
-      document.createTextNode(" · "),
-      strongText(data.total_queries_served),
-      document.createTextNode(" queries servidas"),
-    );
+    renderStats(data);
   } catch {
-    statsEl.textContent = "API offline · el corpus espera al backend";
+    statsEl.textContent = t("apiOffline");
     setConnectionState(false);
   }
 }
@@ -100,7 +262,7 @@ async function loadCategories() {
   try {
     const data = await requestJson("/api/categories");
     categoriesEl.replaceChildren();
-    const allChip = makeChip("todas", null);
+    const allChip = makeChip(t("allCategories"), null);
     categoriesEl.appendChild(allChip);
     data.categories.forEach((cat) => {
       categoriesEl.appendChild(makeChip(cat, cat));
@@ -138,10 +300,11 @@ function renderEmpty(message) {
 }
 
 function renderResults(data) {
+  const resultCount = data.total_results === 1
+    ? t("oneResult")
+    : t("manyResults", { count: data.total_results });
   metaEl.replaceChildren(
-    document.createTextNode(
-      `${data.total_results} resultado${data.total_results === 1 ? "" : "s"} · `,
-    ),
+    document.createTextNode(`${resultCount} · `),
     (() => {
       const latency = document.createElement("span");
       latency.className = "latency";
@@ -151,7 +314,7 @@ function renderResults(data) {
   );
 
   if (data.results.length === 0) {
-    renderEmpty("Sin resultados. Probá con otros términos.");
+    renderEmpty(t("noResults"));
     return;
   }
 
@@ -196,7 +359,7 @@ function renderResults(data) {
 
 async function runSearch(query) {
   lastQuery = query;
-  metaEl.textContent = "buscando…";
+  metaEl.textContent = t("searching");
   try {
     const params = new URLSearchParams({ q: query, limit: "10" });
     if (activeCategory) params.set("category", activeCategory);
@@ -206,10 +369,15 @@ async function runSearch(query) {
     loadStats();
   } catch {
     metaEl.textContent = "";
-    setConnectionState(false, `La API no pudo procesar la búsqueda en ${API_BASE}. Podés reintentar cuando el backend esté online.`);
-    renderEmpty("La búsqueda necesita que la API esté disponible. Usá “reintentar conexión”.");
+    setConnectionState(false, t("searchFailed", { api: API_BASE }));
+    renderEmpty(t("resultNeedsApi"));
   }
 }
+
+languageButtons.forEach((button) => {
+  button.addEventListener("click", () => applyLanguage(button.dataset.language));
+});
+applyLanguage(currentLanguage);
 
 retryButton.addEventListener("click", checkConnection);
 quickSearches.forEach((button) => {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,24 +16,31 @@
     <div class="wordmark">
       <span class="wordmark-dot"></span>ATLAS
     </div>
-    <div id="stats" class="stats-ticker" aria-live="polite">conectando al índice…</div>
+    <div class="topbar-actions">
+      <div id="stats" class="stats-ticker" aria-live="polite">API offline · the corpus is waiting for the backend</div>
+      <div class="language-switch" role="group" aria-label="Language">
+        <button class="language-button active" type="button" data-language="en" aria-pressed="true">EN</button>
+        <span aria-hidden="true">/</span>
+        <button class="language-button" type="button" data-language="es" aria-pressed="false">ES</button>
+      </div>
+    </div>
   </header>
 
   <main class="console">
     <div class="intro">
-      <p class="eyebrow-alt">motor de búsqueda construido desde cero — tokenizer, índice invertido, ranking BM25</p>
-      <h1>Probá cómo piensa un buscador.</h1>
-      <p class="intro-copy">Hay 44 documentos técnicos precargados sobre algoritmos, bases de datos, sistemas, seguridad, DevOps y más. No necesitás crear una cuenta ni cargar datos: elegí un ejemplo o escribí tu propia consulta.</p>
+      <p class="eyebrow-alt" data-i18n="eyebrow">search engine built from scratch — tokenizer, inverted index, BM25 ranking</p>
+      <h1 data-i18n="introTitle">See how a search engine thinks.</h1>
+      <p class="intro-copy" data-i18n="introCopy">Explore 44 preloaded technical documents about algorithms, databases, systems, security, DevOps, and more. No account or upload is needed: choose an example or write your own query.</p>
     </div>
 
     <aside id="connection-notice" class="connection-notice" role="status" aria-live="polite" hidden>
       <div class="notice-marker" aria-hidden="true">!</div>
       <div class="notice-body">
-        <strong id="connection-title">La API no responde</strong>
-        <p id="connection-message">El frontend está publicado, pero necesita conectarse al backend para buscar.</p>
+        <strong id="connection-title">The backend is unavailable</strong>
+        <p id="connection-message">The frontend is online, but it needs the API to search.</p>
         <div class="notice-actions">
-          <button id="retry-button" class="button-secondary" type="button">reintentar conexión</button>
-          <a id="api-status-link" href="#" target="_blank" rel="noopener">ver healthcheck</a>
+          <button id="retry-button" class="button-secondary" type="button" data-i18n="retry">retry connection</button>
+          <a id="api-status-link" href="#" target="_blank" rel="noopener" data-i18n="healthcheck">view healthcheck</a>
         </div>
       </div>
     </aside>
@@ -43,56 +50,63 @@
       <input
         id="query"
         type="text"
-        placeholder="buscá algo como 'base de datos' o 'seguridad api'…"
+        placeholder="try 'inverted index' or 'API security'…"
         autofocus
       />
-      <button type="submit">buscar</button>
+      <button type="submit" data-i18n="searchButton">search</button>
     </form>
 
     <div class="quick-start" aria-labelledby="quick-start-title">
-      <div class="section-label" id="quick-start-title">empezá por acá</div>
+      <div class="section-label" id="quick-start-title" data-i18n="quickStart">start here</div>
       <div id="quick-searches" class="quick-searches">
-        <button class="quick-search" type="button" data-query="índice invertido">índice invertido <span>→</span></button>
-        <button class="quick-search" type="button" data-query="seguridad api">seguridad API <span>→</span></button>
-        <button class="quick-search" type="button" data-query="Docker y CI/CD">Docker y CI/CD <span>→</span></button>
-        <button class="quick-search" type="button" data-query="búsqueda semántica">búsqueda semántica <span>→</span></button>
+        <button class="quick-search" type="button" data-query="inverted index" data-query-en="inverted index" data-query-es="índice invertido"><span class="quick-label" data-i18n="quickIndex">inverted index</span> <span>→</span></button>
+        <button class="quick-search" type="button" data-query="API security" data-query-en="API security" data-query-es="seguridad API"><span class="quick-label" data-i18n="quickSecurity">API security</span> <span>→</span></button>
+        <button class="quick-search" type="button" data-query="Docker and CI/CD" data-query-en="Docker and CI/CD" data-query-es="Docker y CI/CD"><span class="quick-label" data-i18n="quickDevops">Docker and CI/CD</span> <span>→</span></button>
+        <button class="quick-search" type="button" data-query="semantic search" data-query-en="semantic search" data-query-es="búsqueda semántica"><span class="quick-label" data-i18n="quickSemantic">semantic search</span> <span>→</span></button>
       </div>
     </div>
 
     <details class="help-panel">
-      <summary><span class="help-icon" aria-hidden="true">?</span><span>¿Cómo pruebo esto?</span><span class="summary-hint">guía rápida para curiosos y técnicos</span></summary>
+      <summary><span class="help-icon" aria-hidden="true">?</span><span data-i18n="helpSummary">How do I try this?</span><span class="summary-hint" data-i18n="helpHint">a quick guide for curious and technical visitors</span></summary>
       <div class="help-content">
         <div class="help-column">
-          <h2>Si querés ver resultados rápido</h2>
+          <h2 data-i18n="quickGuideTitle">For a quick first result</h2>
           <ol>
-            <li>Elegí una consulta sugerida o escribí dos o tres palabras.</li>
-            <li>Usá las categorías para acotar el corpus.</li>
-            <li>Compará el <strong>score BM25</strong> y la latencia de cada respuesta.</li>
+            <li data-i18n="quickGuideOne">Choose a suggested query or type two or three words.</li>
+            <li data-i18n="quickGuideTwo">Use categories to narrow the corpus.</li>
+            <li data-i18n="quickGuideThree">Compare the <strong>BM25 score</strong> and real response latency.</li>
           </ol>
-          <p class="help-example">Probá: <button class="inline-query" type="button" data-query="bases de datos">bases de datos</button> o <button class="inline-query" type="button" data-query="concurrencia">concurrencia</button></p>
+          <p class="help-example"><span data-i18n="tryLabel">Try</span>: <button class="inline-query" type="button" data-query="databases" data-query-en="databases" data-query-es="bases de datos">databases</button> <span data-i18n="orLabel">or</span> <button class="inline-query" type="button" data-query="concurrency" data-query-en="concurrency" data-query-es="concurrencia">concurrency</button></p>
         </div>
         <div class="help-column help-technical">
-          <h2>Si sos técnico o recruiter</h2>
+          <h2 data-i18n="technicalGuideTitle">For technical reviewers and recruiters</h2>
           <ul>
-            <li>El corpus de demo se carga automáticamente al iniciar la API.</li>
-            <li>El ranking está implementado desde cero: tokenizer, índice invertido y BM25.</li>
-            <li>La respuesta muestra latencia real; <a id="help-api-link" href="http://localhost:8000/docs" target="_blank" rel="noopener">abrí Swagger</a> para explorar los endpoints.</li>
+            <li data-i18n="technicalGuideOne">The demo corpus loads automatically when the API starts.</li>
+            <li data-i18n="technicalGuideTwo">The ranking path is built from scratch: tokenizer, inverted index, and BM25.</li>
+            <li><span data-i18n="technicalGuideThree">Each response includes real latency;</span> <a id="help-api-link" href="http://localhost:8000/docs" target="_blank" rel="noopener" data-i18n="openSwagger">open Swagger</a> <span data-i18n="technicalGuideFour">to explore the endpoints.</span></li>
           </ul>
-          <p class="help-links"><a href="https://github.com/nbmsystemas/atlas-search-engine" target="_blank" rel="noopener">ver código en GitHub</a> <span>·</span> <a href="https://github.com/nbmsystemas/atlas-search-engine/blob/main/docs/architecture.html" target="_blank" rel="noopener">ver arquitectura</a></p>
+          <p class="help-links"><a href="https://github.com/nbmsystemas/atlas-search-engine" target="_blank" rel="noopener" data-i18n="viewGithub">view code on GitHub</a> <span>·</span> <a href="https://github.com/nbmsystemas/atlas-search-engine/blob/main/docs/architecture.html" target="_blank" rel="noopener" data-i18n="viewArchitecture">view architecture</a></p>
         </div>
       </div>
     </details>
 
-    <div class="category-heading"><span class="section-label">filtrá por tema</span><span class="category-hint">opcional</span></div>
+    <div class="category-heading"><span class="section-label" data-i18n="categoryHeading">filter by topic</span><span class="category-hint" data-i18n="optional">optional</span></div>
     <div id="categories" class="chips" aria-label="Categorías disponibles"></div>
 
     <section id="results-meta" class="results-meta" aria-live="polite"></section>
     <section id="results" class="results"></section>
 
     <footer class="foot">
-      <a href="https://github.com/nbmsystemas/atlas-search-engine" target="_blank" rel="noopener">código fuente en GitHub</a>
-      <span>·</span>
-      <a id="api-docs-link" href="http://localhost:8000/docs" target="_blank" rel="noopener">documentación de la API (Swagger)</a>
+      <div class="foot-links">
+        <a href="https://github.com/nbmsystemas/atlas-search-engine" target="_blank" rel="noopener" data-i18n="viewSource">source code on GitHub</a>
+        <span>·</span>
+        <a id="api-docs-link" href="http://localhost:8000/docs" target="_blank" rel="noopener" data-i18n="apiDocs">API documentation (Swagger)</a>
+      </div>
+      <div class="foot-author">
+        <strong data-i18n="builtBy">Built by nbmsystemas</strong>
+        <span data-i18n="authorBio">Backend engineering · Search systems · Practical software craftsmanship</span>
+      </div>
+      <p class="foot-principles" data-i18n="juniorMessage">For junior engineers: learn to ship the whole system—tests, observability, documentation, reproducible deployments, and honest trade-offs.</p>
     </footer>
   </main>
 

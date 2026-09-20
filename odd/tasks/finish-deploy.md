@@ -20,6 +20,8 @@ Publish the repository to `nbmsystemas/atlas-search-engine`, deploy the FastAPI 
 - [x] Improve first-use guidance with seeded query examples, audience-specific help, and actionable offline/retry states.
 - [x] Add a favicon and an overrideable production API configuration.
 - [x] Verify, commit, and publish the usability fixes.
+- [x] Add bilingual English/Spanish frontend interaction with English as the first-visit default.
+- [x] Add the public author footer and junior-engineering practices message without inventing credentials.
 
 ## Evidence
 - Repository was initialized on the `main` branch with commit `1f5dc82`.
@@ -33,3 +35,4 @@ Publish the repository to `nbmsystemas/atlas-search-engine`, deploy the FastAPI 
 - Usability verification: local API health, stats, and sample search return seeded data (44 documents); the frontend serves the favicon and new help/search guidance over HTTP. The custom Vercel domain now serves the updated production frontend.
 - Published usability commits: `915ddfd` (first-use guidance, retry state, favicon) and `ff09163` (custom-domain CORS configuration).
 - Production verification: Render health, Swagger, stats, search, and CORS all return successfully; the backend reports 44 indexed documents and 648 vocabulary terms.
+- Bilingual UI verification: language toggle, persisted preference, translated help/search/error/footer copy, and public author identity `nbmsystemas` are implemented; JavaScript syntax, HTML/CSS diagnostics, HTTP serving, favicon, and the Impeccable detector completed without actionable findings (detector parser ran in degraded regex mode).

@@ -154,9 +154,9 @@ To reproduce the deployment in another Render workspace, open the [direct Render
 
 ### Frontend on Vercel
 
-The static frontend is live at <https://atlas.nbmsystemas.com>. To reproduce the deployment, import the repository into Vercel and set `frontend` as the Root Directory, or deploy from the repository root with `vercel --prod`; [`vercel.json`](vercel.json) sets the output directory.
+The static frontend is live at <https://atlas.nbmsystemas.com>. It opens in English and includes an English/Spanish toggle that persists the visitor's preference in the browser. To reproduce the deployment, import the repository into Vercel and set `frontend` as the Root Directory, or deploy from the repository root with `vercel --prod`; [`vercel.json`](vercel.json) sets the output directory.
 
-The frontend uses `http://localhost:8000` on local hosts and the Render service as its production fallback. You can override it before loading `script.js` with `window.ATLAS_API_BASE`.
+The frontend uses `http://localhost:8000` on local hosts and the Render service as its production fallback. You can override it before loading `script.js` with `window.ATLAS_API_BASE` or temporarily with `?api=https://your-backend.example.com`.
 
 ## Honest limitations and roadmap
 

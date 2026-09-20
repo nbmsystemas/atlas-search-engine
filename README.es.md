@@ -148,8 +148,9 @@ pytest -v          # 19 passed
   - Búsqueda de ejemplo: `https://atlas-search-engine-api.onrender.com/api/search?q=inverted+index&limit=3`
   - Para reproducir el deploy, usá el [deploy directo de Render](https://render.com/deploy?repo=https://github.com/nbmsystemas/atlas-search-engine).
 - **Frontend en Vercel**: importá el repositorio, configurá `frontend` como
-  *Root Directory* y publicá como sitio estático. `vercel.json` también
-  permite desplegar desde la raíz con `vercel --prod`.
+  *Root Directory* y publicá como sitio estático. Abre en inglés e incluye un
+  selector inglés/español que recuerda la preferencia del visitante.
+  `vercel.json` también permite desplegar desde la raíz con `vercel --prod`.
 - **CORS**: `render.yaml` ya configura `ATLAS_ALLOWED_ORIGINS` con
   `https://atlas.nbmsystemas.com`. Podés agregar más orígenes separados por
   comas si usás un preview de Vercel.
