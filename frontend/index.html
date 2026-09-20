@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Atlas — Search Engine Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wordmark">
+      <span class="wordmark-dot"></span>ATLAS
+    </div>
+    <div id="stats" class="stats-ticker">conectando al índice…</div>
+  </header>
+
+  <main class="console">
+    <div class="intro">
+      <p class="eyebrow-alt">motor de búsqueda construido desde cero — tokenizer, índice invertido, ranking BM25</p>
+    </div>
+
+    <form id="search-form" class="search-bar" autocomplete="off">
+      <span class="prompt-glyph">&gt;</span>
+      <input
+        id="query"
+        type="text"
+        placeholder="buscá algo como 'base de datos' o 'seguridad api'…"
+        autofocus
+      />
+      <button type="submit">buscar</button>
+    </form>
+
+    <div id="categories" class="chips"></div>
+
+    <section id="results-meta" class="results-meta"></section>
+    <section id="results" class="results"></section>
+
+    <footer class="foot">
+      <a href="https://github.com/" target="_blank" rel="noopener">código fuente en GitHub</a>
+      <span>·</span>
+      <a href="/docs" target="_blank" rel="noopener">documentación de la API (Swagger)</a>
+    </footer>
+  </main>
+
+<script src="script.js"></script>
+</body>
+</html>
