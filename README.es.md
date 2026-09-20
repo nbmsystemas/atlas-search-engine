@@ -11,10 +11,10 @@ cada búsqueda.
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**[▶ Probar la demo en vivo](https://atlas.nbmsystemas.com)** &nbsp;·&nbsp; **Swagger: pendiente de deploy del backend** &nbsp;·&nbsp; [Notas de arquitectura](docs/architecture.es.md) &nbsp;·&nbsp; [Diagrama interactivo](docs/architecture.html)
+**[▶ Probar la demo en vivo](https://atlas.nbmsystemas.com)** &nbsp;·&nbsp; **[Swagger API](https://atlas-search-engine-api.onrender.com/docs)** &nbsp;·&nbsp; [Notas de arquitectura](docs/architecture.es.md) &nbsp;·&nbsp; [Diagrama interactivo](docs/architecture.html)
 
-> Los links públicos se agregan únicamente después de verificar las URLs reales
-> de Render y Vercel. No se publican URLs inventadas.
+> El frontend está publicado en Vercel y el backend FastAPI está activo en Render.
+> Healthcheck: `https://atlas-search-engine-api.onrender.com/api/health`.
 
 ---
 
@@ -141,9 +141,12 @@ pytest -v          # 19 passed
 ## Deploy
 
 - **Backend en Render**: el archivo [`render.yaml`](render.yaml) define el
-  servicio Docker, el healthcheck y el nombre `atlas-search-engine-api`.
-  Usá el [deploy directo de Render](https://render.com/deploy?repo=https://github.com/nbmsystemas/atlas-search-engine)
-  y verificá `https://atlas-search-engine-api.onrender.com/api/health`.
+  servicio Docker `atlas-search-engine-api`, que está activo en
+  `https://atlas-search-engine-api.onrender.com`.
+  - Health: `https://atlas-search-engine-api.onrender.com/api/health`
+  - Swagger: `https://atlas-search-engine-api.onrender.com/docs`
+  - Búsqueda de ejemplo: `https://atlas-search-engine-api.onrender.com/api/search?q=inverted+index&limit=3`
+  - Para reproducir el deploy, usá el [deploy directo de Render](https://render.com/deploy?repo=https://github.com/nbmsystemas/atlas-search-engine).
 - **Frontend en Vercel**: importá el repositorio, configurá `frontend` como
   *Root Directory* y publicá como sitio estático. `vercel.json` también
   permite desplegar desde la raíz con `vercel --prod`.

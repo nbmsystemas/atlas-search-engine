@@ -8,10 +8,10 @@ A search engine built from scratch: custom tokenization, an inverted index, and 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**[▶ Open the live demo](https://atlas.nbmsystemas.com)** · **Swagger: pending backend deployment** · [Architecture notes](docs/architecture.md) · [Interactive architecture diagram](docs/architecture.html)
+**[▶ Open the live demo](https://atlas.nbmsystemas.com)** · **[Swagger API](https://atlas-search-engine-api.onrender.com/docs)** · [Architecture notes](docs/architecture.md) · [Interactive architecture diagram](docs/architecture.html)
 
-> The frontend is deployed on Vercel. The backend is configured for Render and
-> will be linked here after its public health endpoint is verified.
+> The frontend is deployed on Vercel and the FastAPI backend is live on Render.
+> The public health check is `https://atlas-search-engine-api.onrender.com/api/health`.
 
 ## Why this project exists
 
@@ -143,12 +143,14 @@ The CI workflow runs both commands automatically. The repository targets Python 
 
 ### Backend on Render
 
-The [`render.yaml`](render.yaml) Blueprint defines the Docker service, health check, and service name `atlas-search-engine-api`.
+The [`render.yaml`](render.yaml) Blueprint defines the Docker service `atlas-search-engine-api`, and it is currently live at <https://atlas-search-engine-api.onrender.com>.
 
-1. Open the [direct Render deploy](https://render.com/deploy?repo=https://github.com/nbmsystemas/atlas-search-engine).
-2. Authorize GitHub and confirm the Blueprint.
-3. Verify `https://atlas-search-engine-api.onrender.com/api/health` returns `{"status":"ok"}`.
-4. The Blueprint already sets `ATLAS_ALLOWED_ORIGINS` to `https://atlas.nbmsystemas.com`.
+- Health: <https://atlas-search-engine-api.onrender.com/api/health>
+- Swagger: <https://atlas-search-engine-api.onrender.com/docs>
+- Search example: <https://atlas-search-engine-api.onrender.com/api/search?q=inverted+index&limit=3>
+- CORS is restricted to `https://atlas.nbmsystemas.com` by default.
+
+To reproduce the deployment in another Render workspace, open the [direct Render deploy](https://render.com/deploy?repo=https://github.com/nbmsystemas/atlas-search-engine) and confirm the Blueprint.
 
 ### Frontend on Vercel
 
