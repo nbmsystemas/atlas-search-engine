@@ -9,7 +9,7 @@ cada búsqueda.
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**Demo en vivo: pendiente de deploy** &nbsp;·&nbsp; **Swagger: pendiente de deploy** &nbsp;·&nbsp; [Arquitectura](docs/architecture.md)
+**[▶ Probar la demo en vivo](https://atlas-search-engine-kappa.vercel.app)** &nbsp;·&nbsp; **Swagger: pendiente de deploy del backend** &nbsp;·&nbsp; [Arquitectura](docs/architecture.md)
 
 > Los links públicos se agregan únicamente después de verificar las URLs reales
 > de Render y Vercel. No se publican URLs inventadas.
@@ -140,17 +140,19 @@ pytest -v          # 19 passed
 
 - **Backend en Render**: el archivo [`render.yaml`](render.yaml) define el
   servicio Docker, el healthcheck y el nombre `atlas-search-engine-api`.
-  Importá el repositorio en Render como Blueprint y verificá
-  `https://atlas-search-engine-api.onrender.com/api/health`.
+  Usá el [deploy directo de Render](https://render.com/deploy?repo=https://github.com/nbmsystemas/atlas-search-engine)
+  y verificá `https://atlas-search-engine-api.onrender.com/api/health`.
 - **Frontend en Vercel**: importá el repositorio, configurá `frontend` como
   *Root Directory* y publicá como sitio estático. `vercel.json` también
   permite desplegar desde la raíz con `vercel --prod`.
 - **CORS**: `ATLAS_ALLOWED_ORIGINS` acepta una lista separada por comas. Para
   producción, reemplazá `*` por la URL real de Vercel en la configuración del
   servicio de Render.
-- Una vez verificadas ambas URLs, reemplazá los dos links `#` del encabezado y
-  el link de Swagger del frontend. La interfaz usa automáticamente localhost
-  en desarrollo y el servicio Render en producción.
+- La demo de Vercel ya está publicada en
+  `https://atlas-search-engine-kappa.vercel.app`. Después de crear el servicio
+  de Render, verificá el endpoint y completá el link de Swagger del encabezado.
+  La interfaz usa automáticamente localhost en desarrollo y el servicio Render
+  en producción.
 
 ## Licencia
 

@@ -12,13 +12,14 @@ Publish the repository to `nbmsystemas/atlas-search-engine`, deploy the FastAPI 
 ## Tasks
 - [x] Prepare Render and Vercel configuration, production API URL handling, and repository links.
 - [x] Run the existing tests and benchmark; add only deployment-blocking fixes.
-- [ ] Create reviewable commits and push the repository to GitHub.
+- [x] Create reviewable commits and push the repository to GitHub.
 - [ ] Deploy backend and frontend through authenticated provider tooling or surface the exact external authorization step.
 - [ ] Update README with verified URLs and run final endpoint/link checks.
 
 ## Evidence
 - Repository was initialized on the `main` branch with commit `1f5dc82`.
 - GitHub CLI is authenticated as `nbmsystemas` with repository and workflow scopes.
-- Final deployment URLs are pending provider authorization/deployment.
+- Final backend URL is pending Render authorization/deployment; the Vercel frontend is live at `https://atlas-search-engine-kappa.vercel.app`.
 - Verification: 19 tests passed; Docker images for backend and frontend built successfully; `docker compose config` and `node --check frontend/script.js` passed.
+- GitHub publication verified: `main` is pushed to `https://github.com/nbmsystemas/atlas-search-engine` and CI completed successfully.
 - Local verification requires Python 3.12 because the pinned pydantic-core does not build under the host Python 3.14.
