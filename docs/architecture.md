@@ -5,14 +5,13 @@
 ## Query flow
 
 ```mermaid
-flowchart TD
-    A[Frontend] -->|GET /api/search?q=...| B[FastAPI]
-    B --> C[Tokenizer]
-    C --> D[In-memory inverted index]
-    D --> E[BM25 ranker]
-    E --> F[Top-K results + score]
-    F --> B
-    B -->|JSON + latency_ms| A
+flowchart LR
+    browser[Browser] -->|HTTPS| frontend[Frontend]
+    frontend -->|GET /api/search| api[FastAPI]
+    api --> tokenizer[Tokenizer]
+    tokenizer --> index[Inverted index]
+    index --> ranker[BM25 ranker]
+    ranker -->|top-K + latency_ms| response[JSON response]
 ```
 
 For a richer explorable version with guided views, relationship tracing, pan/zoom, and theme controls, open the [interactive architecture diagram](architecture.html).

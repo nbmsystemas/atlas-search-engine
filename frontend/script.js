@@ -1,13 +1,19 @@
 // The static frontend keeps the API URL configurable at runtime. Local Docker
-// uses localhost; the production fallback points to the Render service defined
-// in render.yaml. Set window.ATLAS_API_BASE before this script to override it.
+// uses localhost; production uses the Render service from render.yaml. A
+// `?api=https://...` query parameter is also supported for provider previews.
 const localHosts = new Set(["localhost", "127.0.0.1"]);
 const defaultApiBase = localHosts.has(window.location.hostname)
   ? "http://localhost:8000"
   : "https://atlas-search-engine-api.onrender.com";
-const API_BASE = window.ATLAS_API_BASE || defaultApiBase;
+const apiOverride = new URLSearchParams(window.location.search).get("api");
+const API_BASE = (apiOverride || window.ATLAS_API_BASE || defaultApiBase).replace(/\/$/, "");
+
 const docsLink = document.getElementById("api-docs-link");
+const helpApiLink = document.getElementById("help-api-link");
+const apiStatusLink = document.getElementById("api-status-link");
 if (docsLink) docsLink.href = `${API_BASE}/docs`;
+if (helpApiLink) helpApiLink.href = `${API_BASE}/docs`;
+if (apiStatusLink) apiStatusLink.href = `${API_BASE}/api/health`;
 
 const form = document.getElementById("search-form");
 const input = document.getElementById("query");
@@ -15,13 +21,65 @@ const resultsEl = document.getElementById("results");
 const metaEl = document.getElementById("results-meta");
 const statsEl = document.getElementById("stats");
 const categoriesEl = document.getElementById("categories");
+const connectionNotice = document.getElementById("connection-notice");
+const connectionTitle = document.getElementById("connection-title");
+const connectionMessage = document.getElementById("connection-message");
+const retryButton = document.getElementById("retry-button");
+const quickSearches = document.querySelectorAll("[data-query]");
 
 let activeCategory = null;
+let lastQuery = "";
+
+function apiUrl(path) {
+  return `${API_BASE}${path}`;
+}
+
+function setConnectionState(isOnline, detail = "") {
+  if (isOnline) {
+    connectionNotice.hidden = true;
+    return;
+  }
+
+  connectionNotice.hidden = false;
+  connectionTitle.textContent = "El backend no está disponible";
+  connectionMessage.textContent = detail ||
+    `La interfaz está publicada, pero la API no responde en ${API_BASE}. El corpus precargado vive en el backend, así que la búsqueda se habilita cuando el servicio está online.`;
+}
+
+async function requestJson(path) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(apiUrl(path), { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`API responded with ${response.status}`);
+    }
+    return response.json();
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+async function checkConnection() {
+  retryButton.disabled = true;
+  retryButton.textContent = "conectando…";
+  try {
+    await requestJson("/api/health");
+    setConnectionState(true);
+    await Promise.all([loadStats(), loadCategories()]);
+    if (lastQuery) runSearch(lastQuery);
+  } catch {
+    setConnectionState(false, `La API sigue sin responder en ${API_BASE}. Si estás usando un preview de Render, revisá que el servicio esté activo.`);
+  } finally {
+    retryButton.disabled = false;
+    retryButton.textContent = "reintentar conexión";
+  }
+}
 
 async function loadStats() {
   try {
-    const res = await fetch(`${API_BASE}/api/stats`);
-    const data = await res.json();
+    const data = await requestJson("/api/stats");
+    setConnectionState(true);
     statsEl.replaceChildren(
       strongText(data.documents_indexed),
       document.createTextNode(" docs · "),
@@ -33,14 +91,14 @@ async function loadStats() {
       document.createTextNode(" queries servidas"),
     );
   } catch {
-    statsEl.textContent = "no se pudo conectar con la API — ¿está corriendo el backend?";
+    statsEl.textContent = "API offline · el corpus espera al backend";
+    setConnectionState(false);
   }
 }
 
 async function loadCategories() {
   try {
-    const res = await fetch(`${API_BASE}/api/categories`);
-    const data = await res.json();
+    const data = await requestJson("/api/categories");
     categoriesEl.replaceChildren();
     const allChip = makeChip("todas", null);
     categoriesEl.appendChild(allChip);
@@ -48,7 +106,7 @@ async function loadCategories() {
       categoriesEl.appendChild(makeChip(cat, cat));
     });
   } catch {
-    /* silencioso: sin categorías si la API no responde */
+    categoriesEl.replaceChildren();
   }
 }
 
@@ -137,19 +195,29 @@ function renderResults(data) {
 }
 
 async function runSearch(query) {
+  lastQuery = query;
   metaEl.textContent = "buscando…";
   try {
     const params = new URLSearchParams({ q: query, limit: "10" });
     if (activeCategory) params.set("category", activeCategory);
-    const res = await fetch(`${API_BASE}/api/search?${params.toString()}`);
-    const data = await res.json();
+    const data = await requestJson(`/api/search?${params.toString()}`);
+    setConnectionState(true);
     renderResults(data);
     loadStats();
   } catch {
     metaEl.textContent = "";
-    renderEmpty("No se pudo conectar con la API. Revisá que el backend esté corriendo.");
+    setConnectionState(false, `La API no pudo procesar la búsqueda en ${API_BASE}. Podés reintentar cuando el backend esté online.`);
+    renderEmpty("La búsqueda necesita que la API esté disponible. Usá “reintentar conexión”.");
   }
 }
+
+retryButton.addEventListener("click", checkConnection);
+quickSearches.forEach((button) => {
+  button.addEventListener("click", () => {
+    input.value = button.dataset.query;
+    runSearch(input.value);
+  });
+});
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();

@@ -8,7 +8,7 @@ A search engine built from scratch: custom tokenization, an inverted index, and 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**[▶ Open the live demo](https://atlas-search-engine-kappa.vercel.app)** · **Swagger: pending backend deployment** · [Architecture notes](docs/architecture.md) · [Interactive architecture diagram](docs/architecture.html)
+**[▶ Open the live demo](https://atlas.nbmsystemas.com)** · **Swagger: pending backend deployment** · [Architecture notes](docs/architecture.md) · [Interactive architecture diagram](docs/architecture.html)
 
 > The frontend is deployed on Vercel. The backend is configured for Render and
 > will be linked here after its public health endpoint is verified.
@@ -152,7 +152,7 @@ The [`render.yaml`](render.yaml) Blueprint defines the Docker service, health ch
 
 ### Frontend on Vercel
 
-The static frontend is live at <https://atlas-search-engine-kappa.vercel.app>. To reproduce the deployment, import the repository into Vercel and set `frontend` as the Root Directory, or deploy from the repository root with `vercel --prod`; [`vercel.json`](vercel.json) sets the output directory.
+The static frontend is live at <https://atlas.nbmsystemas.com>. To reproduce the deployment, import the repository into Vercel and set `frontend` as the Root Directory, or deploy from the repository root with `vercel --prod`; [`vercel.json`](vercel.json) sets the output directory.
 
 The frontend uses `http://localhost:8000` on local hosts and the Render service as its production fallback. You can override it before loading `script.js` with `window.ATLAS_API_BASE`.
 

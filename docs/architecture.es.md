@@ -7,14 +7,13 @@ Para una vista más rica y explorable, abrí el [diagrama interactivo](architect
 ## Flujo de una consulta
 
 ```mermaid
-flowchart TD
-    A[Frontend] -->|GET /api/search?q=...| B[FastAPI]
-    B --> C[Tokenizer]
-    C --> D[Índice invertido en memoria]
-    D --> E[BM25 Ranker]
-    E --> F[Top-K resultados + score]
-    F --> B
-    B -->|JSON + latency_ms| A
+flowchart LR
+    navegador[Navegador] -->|HTTPS| frontend[Frontend]
+    frontend -->|GET /api/search| api[FastAPI]
+    api --> tokenizer[Tokenizer]
+    tokenizer --> indice[Índice invertido]
+    indice --> ranker[Ranking BM25]
+    ranker -->|top-K + latency_ms| respuesta[Respuesta JSON]
 ```
 
 ## Decisiones de diseño

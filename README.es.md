@@ -11,7 +11,7 @@ cada búsqueda.
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**[▶ Probar la demo en vivo](https://atlas-search-engine-kappa.vercel.app)** &nbsp;·&nbsp; **Swagger: pendiente de deploy del backend** &nbsp;·&nbsp; [Notas de arquitectura](docs/architecture.es.md) &nbsp;·&nbsp; [Diagrama interactivo](docs/architecture.html)
+**[▶ Probar la demo en vivo](https://atlas.nbmsystemas.com)** &nbsp;·&nbsp; **Swagger: pendiente de deploy del backend** &nbsp;·&nbsp; [Notas de arquitectura](docs/architecture.es.md) &nbsp;·&nbsp; [Diagrama interactivo](docs/architecture.html)
 
 > Los links públicos se agregan únicamente después de verificar las URLs reales
 > de Render y Vercel. No se publican URLs inventadas.
