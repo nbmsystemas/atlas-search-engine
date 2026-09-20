@@ -1,65 +1,59 @@
-# Arquitectura
+# Architecture
 
-## Flujo de una consulta
+[English](architecture.md) · [Español](architecture.es.md) · [Interactive diagram](architecture.html)
+
+## Query flow
 
 ```mermaid
 flowchart TD
     A[Frontend] -->|GET /api/search?q=...| B[FastAPI]
     B --> C[Tokenizer]
-    C --> D[Índice invertido en memoria]
-    D --> E[BM25 Ranker]
-    E --> F[Top-K resultados + score]
+    C --> D[In-memory inverted index]
+    D --> E[BM25 ranker]
+    E --> F[Top-K results + score]
     F --> B
     B -->|JSON + latency_ms| A
 ```
 
-## Decisiones de diseño
+For a richer explorable version with guided views, relationship tracing, pan/zoom, and theme controls, open the [interactive architecture diagram](architecture.html).
 
-### ¿Por qué índice invertido en memoria y no una base de datos externa?
+## Design decisions
 
-Para un motor de búsqueda educativo/portfolio, tener el índice en memoria
-(un `dict` de Python) hace que el código del algoritmo sea el protagonista,
-en vez de esconderlo detrás de una librería como Elasticsearch. El diseño
-del `InvertedIndex` (ver `backend/app/index.py`) es intencionalmente el
-mismo concepto que usa Lucene por debajo: `term -> {doc_id: freq}`.
+### Why an in-memory inverted index instead of an external database?
 
-Un paso natural de "v2" sería persistir el índice a disco (por ejemplo con
-SQLite o un archivo binario propio) para no reconstruirlo en cada arranque.
+For an educational and portfolio search engine, keeping the index in memory makes the algorithm the protagonist instead of hiding it behind a library such as Elasticsearch. The `InvertedIndex` design in `backend/app/index.py` follows the same core concept used by Lucene: `term → {doc_id: frequency}`.
 
-### ¿Por qué BM25 y no similitud coseno con TF-IDF puro?
+A natural v2 step would persist the index to disk—for example with SQLite or a purpose-built binary format—so the service does not have to rebuild it on every start.
 
-BM25 satura la contribución de términos muy repetidos (evita que un
-documento que repite la palabra 50 veces gane artificialmente) y normaliza
-por longitud de documento, lo cual TF-IDF puro no hace bien. Es, además,
-el algoritmo que usa Elasticsearch/Lucene por default — implementarlo a
-mano es la forma más directa de demostrar que entendés cómo funciona un
-buscador "de verdad" por dentro.
+### Why BM25 instead of plain TF-IDF cosine similarity?
 
-### Límites conocidos (honestidad técnica > vender humo)
+BM25 saturates the contribution of terms that repeat many times, preventing a document from winning just because it repeats a word 50 times. It also normalizes for document length, which plain TF-IDF does less effectively. BM25 is the default ranking family used by Elasticsearch/Lucene, so implementing it manually is a direct way to demonstrate how a real search engine ranks results internally.
 
-- El stemmer es intencionalmente ingenuo (recorte de sufijos), no un
-  Porter/Snowball real. Es una simplificación documentada en
-  `tokenizer.py`, no un descuido.
-- El índice vive en memoria de un solo proceso: no sobrevive un restart
-  ni escala horizontalmente. Ver la sección "Roadmap" del README para los
-  siguientes pasos (persistencia, sharding, embeddings).
-- La búsqueda es léxica (por coincidencia de términos), no semántica. Dos
-  palabras con significado similar pero distinta raíz no matchean todavía.
+### Why a custom tokenizer?
 
-## Estructura del repo
+The tokenizer normalizes accents, lowercases input, removes Spanish and English stopwords, and applies intentionally simple stemming. That keeps the query and indexing paths deterministic and easy to inspect in unit tests without introducing a heavyweight NLP dependency.
+
+## Known limitations
+
+- The stemmer is intentionally naive suffix trimming, not a full Porter or Snowball implementation. This is documented simplification in `backend/app/tokenizer.py`, not an accidental omission.
+- The index lives in one process's memory: it does not survive a restart and does not scale horizontally. See the README roadmap for persistence, sharding, and embeddings.
+- Search is lexical rather than semantic. Two words with similar meaning but different roots do not necessarily match.
+- The demo corpus has only 44 documents, so benchmark numbers are useful for regression checks, not capacity planning.
+
+## Repository structure
 
 ```text
 atlas-search-engine/
 ├── backend/
 │   ├── app/
-│   │   ├── tokenizer.py    # normalización de texto
-│   │   ├── index.py        # índice invertido
-│   │   ├── ranking.py      # BM25
-│   │   ├── main.py         # API FastAPI
-│   │   └── data/corpus.py  # dataset de demo
-│   ├── tests/               # 19 tests (unitarios + integración)
-│   └── benchmark.py         # mide latencia/throughput reales
-├── frontend/                 # consola de búsqueda (HTML/CSS/JS vanilla)
-├── docs/architecture.md      # este archivo
-└── .github/workflows/ci.yml  # tests automáticos en cada push
+│   │   ├── tokenizer.py    # text normalization and tokenization
+│   │   ├── index.py        # inverted index
+│   │   ├── ranking.py      # BM25 scoring
+│   │   ├── main.py         # FastAPI endpoints
+│   │   └── data/corpus.py  # demo dataset
+│   ├── tests/               # 19 unit and integration tests
+│   └── benchmark.py         # real latency and throughput benchmark
+├── frontend/                # vanilla HTML/CSS/JavaScript search console
+├── docs/architecture.md     # this document
+└── .github/workflows/ci.yml # automated tests on every push
 ```

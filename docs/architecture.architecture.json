@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Atlas Search Engine Architecture",
+    "locale": "en",
+    "output": "architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/nbmsystemas/atlas-search-engine",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "9a0478bc96e399f0dd02173d64e7f5f814c6d3ad"
+    },
+    "views": [
+      {
+        "id": "request-path",
+        "label": "Search request path",
+        "focus": ["browser", "frontend", "api", "tokenizer", "index", "ranker"],
+        "note": "Follow a query from the browser to the ranked response."
+      },
+      {
+        "id": "index-build",
+        "label": "Index construction",
+        "focus": ["corpus", "tokenizer", "index"],
+        "note": "See how the demo corpus becomes an in-memory inverted index at startup."
+      },
+      {
+        "id": "deployment",
+        "label": "Deployment boundary",
+        "focus": ["github", "frontend", "api"],
+        "note": "Separate the static Vercel frontend from the Dockerized Render API."
+      }
+    ]
+  },
+  "components": [
+    { "id": "browser", "type": "external", "label": "Browser", "sublabel": "search console", "pos": [40, 300], "size": [138, 64], "sources": [{ "path": "frontend/index.html", "label": "UI shell" }] },
+    { "id": "frontend", "type": "cloud", "label": "Vercel Frontend", "sublabel": "static HTML / CSS / JS", "pos": [250, 300], "size": [156, 64], "tag": "production", "sources": [{ "path": "frontend/script.js", "label": "API client" }] },
+    { "id": "api", "type": "backend", "label": "FastAPI API", "sublabel": "Render · /api/*", "pos": [480, 300], "size": [150, 64], "tag": "Docker", "sources": [{ "path": "backend/app/main.py", "label": "HTTP boundary" }] },
+    { "id": "tokenizer", "type": "backend", "label": "Tokenizer", "sublabel": "normalize + filter", "pos": [710, 180], "size": [148, 64], "sources": [{ "path": "backend/app/tokenizer.py", "label": "text processing" }] },
+    { "id": "index", "type": "database", "label": "Inverted Index", "sublabel": "in-memory term map", "pos": [930, 300], "size": [154, 64], "tag": "single process", "sources": [{ "path": "backend/app/index.py", "label": "term → documents" }] },
+    { "id": "ranker", "type": "backend", "label": "BM25 Ranker", "sublabel": "top-K scoring", "pos": [1150, 300], "size": [150, 64], "sources": [{ "path": "backend/app/ranking.py", "label": "relevance scoring" }] },
+    { "id": "corpus", "type": "database", "label": "Demo Corpus", "sublabel": "44 documents", "pos": [710, 470], "size": [148, 64], "sources": [{ "path": "backend/app/data/corpus.py", "label": "seed documents" }] },
+    { "id": "github", "type": "external", "label": "GitHub Actions", "sublabel": "tests + benchmark", "pos": [250, 110], "size": [156, 64], "tag": "CI", "sources": [{ "path": ".github/workflows/ci.yml", "label": "continuous checks" }] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Vercel · static delivery", "wraps": ["frontend"] },
+    { "kind": "region", "label": "Render · Docker service", "wraps": ["api", "tokenizer", "index", "ranker", "corpus"] }
+  ],
+  "connections": [
+    { "id": "browser-frontend", "from": "browser", "to": "frontend", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "frontend-api", "from": "frontend", "to": "api", "label": "GET /api/search", "variant": "emphasis", "labelDy": -26 },
+    { "id": "api-tokenizer", "from": "api", "to": "tokenizer", "label": "query tokens", "fromSide": "top", "toSide": "bottom" },
+    { "id": "tokenizer-index", "from": "tokenizer", "to": "index", "label": "normalized terms", "fromSide": "right", "toSide": "top" },
+    { "id": "index-ranker", "from": "index", "to": "ranker", "label": "candidate docs", "variant": "emphasis", "labelDy": -26 },
+    { "id": "ranker-api", "from": "ranker", "to": "api", "label": "results + scores", "variant": "dashed", "fromSide": "bottom", "toSide": "bottom", "via": [[1225, 560], [555, 560]] },
+    { "id": "corpus-index", "from": "corpus", "to": "index", "label": "startup indexing", "variant": "dashed", "fromSide": "top", "toSide": "bottom" },
+    { "id": "github-frontend", "from": "github", "to": "frontend", "label": "deploy", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 24, "labelDx": -36 },
+    { "id": "github-api", "from": "github", "to": "api", "label": "CI gate", "variant": "dashed", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Request path", "items": ["The browser calls the static frontend over HTTPS", "FastAPI measures and returns real query latency", "BM25 returns ranked top-K documents"] },
+    { "dot": "violet", "title": "Search core", "items": ["Tokenization normalizes accents and removes stopwords", "The inverted index stores term frequencies in memory", "BM25 balances term frequency, rarity, and document length"] },
+    { "dot": "amber", "title": "Honest boundary", "items": ["The demo index is rebuilt on process startup", "The corpus is intentionally small", "GitHub Actions runs tests and the benchmark on every push"] }
+  ]
+}
