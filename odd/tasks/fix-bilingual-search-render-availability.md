@@ -27,4 +27,10 @@ Make the English quick searches `inverted index` and `semantic search` return th
 - In-process checks confirmed results for `inverted index`, `semantic search`, `índice invertido`, and `búsqueda semántica`.
 - LSP diagnostics reported no findings on the changed source/config/task files; the Markdown server did not provide a clean confirmation.
 - Render YAML inspection confirmed `plan: starter`, `/api/health`, Docker paths, and `ATLAS_ALLOWED_ORIGINS`.
-- Pending outside the repository: activate/confirm the paid Starter plan and live service availability in Render.
+- Production verification after pushing `b0339b7` to `main`:
+  - `https://atlas-search-engine-api.onrender.com/api/health` returned `{"status":"ok"}`.
+  - `inverted index` returned 1 result.
+  - `semantic search` returned 1 result.
+  - `https://atlas.nbmsystemas.com` returned HTTP 200 through Vercel.
+  - GitHub Actions CI completed successfully: run 35643190785.
+- Render billing/plan activation remains managed in the Render dashboard; the deployed service is responding with the new corpus.
