@@ -33,7 +33,8 @@ _RAW_CORPUS = [
     ("Índices invertidos: la base de todo motor de búsqueda", "algoritmos",
      "Un índice invertido mapea cada palabra a la lista de documentos donde "
      "aparece, permitiendo resolver una búsqueda sin recorrer todo el corpus. "
-     "Es la estructura de datos central en Lucene, Elasticsearch y Solr."),
+     "Es la estructura de datos central en Lucene, Elasticsearch y Solr. "
+     "En inglés, esta estructura se conoce como inverted index."),
 
     ("TF-IDF: medir la importancia de una palabra", "algoritmos",
      "TF-IDF combina la frecuencia de un término en un documento con la "
@@ -167,7 +168,8 @@ _RAW_CORPUS = [
      "Un embedding representa una palabra o documento como un vector "
      "numérico en un espacio donde elementos con significado similar quedan "
      "cerca entre sí, permitiendo búsquedas por similitud de significado y "
-     "no solo por coincidencia exacta de palabras."),
+     "no solo por coincidencia exacta de palabras. En inglés, este enfoque "
+     "se conoce como semantic search."),
 
     ("Redes neuronales y descenso de gradiente", "ml",
      "Una red neuronal ajusta sus pesos internos mediante descenso de "
