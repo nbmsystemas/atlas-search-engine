@@ -37,12 +37,12 @@ Turn Atlas from a ranking demonstration into a practical search experience witho
 - Commit: pending.
 
 ### Task 2 — Make results actionable and explain relevance
-- Status: pending
+- Status: done
 - Route: delegated direct writer.
 - Allowed edit surfaces: `frontend/index.html`, `frontend/script.js`, `frontend/style.css`.
-- Behavior: add result links/actions, an accessible details dialog or panel, matched-term highlighting, and a concise BM25 explanation while preserving EN/ES copy.
-- Checks: `node --check frontend/script.js`; `node /home/pabloezm/.pi/agent/skills/impeccable/scripts/detect.mjs --json frontend/index.html` (detector limitations must be recorded).
-- Forecast: ~180 authored lines.
+- Behavior: result titles/actions open document details through `/api/documents/{doc_id}`, snippets highlight matched terms, and BM25 relevance is explained in English and Spanish while preserving the visual identity.
+- Checks: `node --check frontend/script.js` passed; detector completed with `[]` in degraded regex fallback because parser modules were unavailable, so computed contrast and selector analysis remain unverified.
+- Forecast: ~180 authored lines; actual source diff 269 lines.
 - Commit: pending.
 
 ### Task 3 — Harden search, filter, and recovery states
@@ -64,8 +64,8 @@ Turn Atlas from a ranking demonstration into a practical search experience witho
 ## Evidence log
 - Initial review: feedback materially valid; current UI has onboarding and technical transparency but weak practical result continuation.
 - Base commit: `c733421`.
-- Task 1 commit: pending (after feature-document bookkeeping).
-- Task 2 commit: pending.
+- Task 1 commit: `8ec6e0b`.
+- Task 2 commit: pending (after feature-document bookkeeping).
 - Task 3 commit: pending.
 
 ## Key risks
