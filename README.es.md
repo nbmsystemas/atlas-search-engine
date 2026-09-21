@@ -118,7 +118,7 @@ Detalle completo de decisiones de diseño y límites conocidos en
 |---|---|---|
 | Core / API | Python 3.12 + FastAPI | Legibilidad del algoritmo + docs OpenAPI gratis |
 | Frontend | HTML/CSS/JS vanilla | Cero dependencias, carga instantánea |
-| Tests | pytest (19 tests) | Unitarios (tokenizer, índice, ranking) + integración (API) |
+| Tests | pytest (21 tests) | Unitarios (tokenizer, índice, ranking) + integración (API) |
 | CI | GitHub Actions | Tests corren en cada push/PR |
 | Deploy | Docker + docker-compose | Un solo comando para levantar todo |
 
@@ -126,7 +126,7 @@ Detalle completo de decisiones de diseño y límites conocidos en
 
 ```bash
 cd backend
-pytest -v          # 19 passed
+pytest -v          # 21 passed
 ```
 
 ## Roadmap (evolución honesta, no prometida de una)

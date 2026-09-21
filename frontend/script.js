@@ -17,6 +17,7 @@ const translations = {
     retry: "retry connection",
     healthcheck: "view healthcheck",
     searchButton: "search",
+    queryLabel: "Search query",
     placeholder: "try 'inverted index' or 'API security'…",
     quickStart: "start here",
     quickIndex: "inverted index",
@@ -53,15 +54,26 @@ const translations = {
     backendUnavailableDetail: "The frontend is published, but the API is not responding at {api}. The preloaded corpus lives in the backend, so searching starts when the service is online.",
     stillUnavailable: "The API is still not responding at {api}. If this is a Render preview, check that the service is running.",
     searching: "searching…",
+    emptyQuery: "Enter a query before searching.",
     resultNeedsApi: "The search needs the API to be available. Use “retry connection”.",
     searchFailed: "The API could not process this search at {api}. Try again when the backend is online.",
-    noResults: "No results. Try a different query.",
+    noResults: "No results for this search.",
+    noResultsContext: "Query: “{query}” · Topic: {category}",
+    clearSearch: "clear search",
+    retrySearch: "retry search",
     oneResult: "1 result",
     manyResults: "{count} results",
     statsDocs: " docs · ",
     statsTerms: " terms · p95 ",
     statsQueries: " queries served",
     connecting: "connecting…",
+    openDocument: "open document →",
+    openDocumentNamed: "Open {title}",
+    backToResults: "back to results",
+    loadingDocument: "loading document…",
+    documentLoadFailed: "The document could not be loaded at {api}. Try again when the backend is online.",
+    documentNotAvailable: "This document is not available right now.",
+    bm25Explanation: "BM25 favors query terms that appear often here, down-weights common terms, and normalizes for document length.",
   },
   es: {
     pageTitle: "Atlas — Consola de búsqueda",
@@ -71,6 +83,7 @@ const translations = {
     retry: "reintentar conexión",
     healthcheck: "ver healthcheck",
     searchButton: "buscar",
+    queryLabel: "Consulta de búsqueda",
     placeholder: "probá con 'índice invertido' o 'seguridad API'…",
     quickStart: "empezá por acá",
     quickIndex: "índice invertido",
@@ -107,15 +120,26 @@ const translations = {
     backendUnavailableDetail: "El frontend está publicado, pero la API no responde en {api}. El corpus precargado vive en el backend, así que la búsqueda se habilita cuando el servicio está online.",
     stillUnavailable: "La API sigue sin responder en {api}. Si estás usando un preview de Render, revisá que el servicio esté activo.",
     searching: "buscando…",
+    emptyQuery: "Ingresá una consulta antes de buscar.",
     resultNeedsApi: "La búsqueda necesita que la API esté disponible. Usá “reintentar conexión”.",
     searchFailed: "La API no pudo procesar la búsqueda en {api}. Probá de nuevo cuando el backend esté online.",
-    noResults: "Sin resultados. Probá con otra consulta.",
+    noResults: "No hay resultados para esta búsqueda.",
+    noResultsContext: "Consulta: “{query}” · Tema: {category}",
+    clearSearch: "limpiar búsqueda",
+    retrySearch: "reintentar búsqueda",
     oneResult: "1 resultado",
     manyResults: "{count} resultados",
     statsDocs: " docs · ",
     statsTerms: " términos · p95 ",
     statsQueries: " consultas servidas",
     connecting: "conectando…",
+    openDocument: "abrir documento →",
+    openDocumentNamed: "Abrir {title}",
+    backToResults: "volver a resultados",
+    loadingDocument: "cargando documento…",
+    documentLoadFailed: "No se pudo cargar el documento en {api}. Probá de nuevo cuando el backend esté online.",
+    documentNotAvailable: "Este documento no está disponible por ahora.",
+    bm25Explanation: "BM25 prioriza los términos de la consulta que aparecen acá, pondera menos los comunes y normaliza por longitud del documento.",
   },
 };
 
@@ -144,6 +168,7 @@ if (apiStatusLink) apiStatusLink.href = `${API_BASE}/api/health`;
 
 const form = document.getElementById("search-form");
 const input = document.getElementById("query");
+const submitButton = form.querySelector('button[type="submit"]');
 const resultsEl = document.getElementById("results");
 const metaEl = document.getElementById("results-meta");
 const statsEl = document.getElementById("stats");
@@ -156,7 +181,11 @@ const quickSearches = document.querySelectorAll("[data-query]");
 
 let activeCategory = null;
 let lastQuery = "";
+let lastResultsData = null;
+let activeDocument = null;
 let latestStats = null;
+let searchPending = false;
+let latestSearchRequest = 0;
 
 function apiUrl(path) {
   return `${API_BASE}${path}`;
@@ -173,6 +202,21 @@ function setConnectionState(isOnline, detail = "") {
   connectionMessage.textContent = detail || t("backendUnavailableDetail", { api: API_BASE });
 }
 
+function setSearchPending(pending) {
+  searchPending = pending;
+  submitButton.disabled = pending;
+  form.setAttribute("aria-busy", String(pending));
+  resultsEl.setAttribute("aria-busy", String(pending));
+}
+
+function updateCategorySelection() {
+  [...categoriesEl.children].forEach((chip) => {
+    const selected = (chip.dataset.category || null) === activeCategory;
+    chip.classList.toggle("active", selected);
+    chip.setAttribute("aria-pressed", String(selected));
+  });
+}
+
 function applyLanguage(language) {
   currentLanguage = language === "es" ? "es" : "en";
   document.documentElement.lang = currentLanguage;
@@ -181,6 +225,8 @@ function applyLanguage(language) {
     element.textContent = t(element.dataset.i18n);
   });
   input.placeholder = t("placeholder");
+  input.setAttribute("aria-label", t("queryLabel"));
+  if (searchPending) metaEl.textContent = t("searching");
   languageButtons.forEach((button) => {
     const isActive = button.dataset.language === currentLanguage;
     button.classList.toggle("active", isActive);
@@ -200,6 +246,12 @@ function applyLanguage(language) {
   }
   if (categoriesEl.children.length) loadCategories();
   if (latestStats) renderStats(latestStats);
+  if (activeDocument) {
+    if (activeDocument.data) renderDocumentDetail(activeDocument.data);
+    else renderDocumentLoading();
+  } else if (lastResultsData) {
+    renderResults(lastResultsData);
+  }
   if (!connectionNotice.hidden) setConnectionState(false);
 }
 
@@ -277,10 +329,11 @@ function makeChip(label, value) {
   chip.textContent = label;
   chip.className = "chip" + (activeCategory === value ? " active" : "");
   chip.type = "button";
+  chip.dataset.category = value || "";
+  chip.setAttribute("aria-pressed", String(activeCategory === value));
   chip.addEventListener("click", () => {
     activeCategory = value;
-    [...categoriesEl.children].forEach((c) => c.classList.remove("active"));
-    chip.classList.add("active");
+    updateCategorySelection();
     if (input.value.trim()) runSearch(input.value.trim());
   });
   return chip;
@@ -299,7 +352,205 @@ function renderEmpty(message) {
   resultsEl.replaceChildren(empty);
 }
 
+function renderNoResults() {
+  const empty = document.createElement("div");
+  empty.className = "empty-state";
+
+  const message = document.createElement("p");
+  message.textContent = t("noResults");
+  const context = document.createElement("p");
+  context.className = "empty-context";
+  context.textContent = t("noResultsContext", {
+    query: lastQuery,
+    category: activeCategory || t("allCategories"),
+  });
+
+  const actions = document.createElement("div");
+  actions.className = "empty-actions";
+  const clearButton = document.createElement("button");
+  clearButton.type = "button";
+  clearButton.className = "empty-action";
+  clearButton.textContent = t("clearSearch");
+  clearButton.addEventListener("click", clearSearch);
+  const retryButton = document.createElement("button");
+  retryButton.type = "button";
+  retryButton.className = "empty-action empty-action-primary";
+  retryButton.textContent = t("retrySearch");
+  retryButton.addEventListener("click", () => runSearch(lastQuery));
+  actions.append(clearButton, retryButton);
+  empty.append(message, context, actions);
+  resultsEl.replaceChildren(empty);
+}
+
+function clearSearch() {
+  latestSearchRequest += 1;
+  activeDocument = null;
+  lastQuery = "";
+  lastResultsData = null;
+  activeCategory = null;
+  input.value = "";
+  metaEl.textContent = "";
+  updateCategorySelection();
+  setSearchPending(false);
+  renderEmpty(t("emptyQuery"));
+  input.focus();
+}
+
+function showEmptyQueryFeedback() {
+  latestSearchRequest += 1;
+  activeDocument = null;
+  lastQuery = "";
+  lastResultsData = null;
+  metaEl.textContent = t("emptyQuery");
+  setSearchPending(false);
+  renderEmpty(t("emptyQuery"));
+  input.focus();
+}
+
+function normalizeToken(value) {
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function stemToken(token) {
+  for (const suffix of ["mente", "ciones", "cion", "ando", "iendo", "amente", "ing", "es", "s"]) {
+    if (token.endsWith(suffix) && token.length - suffix.length >= 3) {
+      return token.slice(0, -suffix.length);
+    }
+  }
+  return token;
+}
+
+function queryTerms(query) {
+  const normalized = normalizeToken(query);
+  const terms = normalized.match(/[a-z0-9]+/g) || [];
+  return new Set(terms.map(stemToken));
+}
+
+function appendHighlightedText(parent, text, query) {
+  const terms = queryTerms(query);
+  if (!terms.size) {
+    parent.textContent = text;
+    return;
+  }
+
+  const wordPattern = /[\p{L}\p{N}]+/gu;
+  let cursor = 0;
+  let match;
+  while ((match = wordPattern.exec(text)) !== null) {
+    if (match.index > cursor) {
+      parent.appendChild(document.createTextNode(text.slice(cursor, match.index)));
+    }
+    const word = normalizeToken(match[0]);
+    if (terms.has(stemToken(word))) {
+      const mark = document.createElement("mark");
+      mark.className = "matched-term";
+      mark.textContent = match[0];
+      parent.appendChild(mark);
+    } else {
+      parent.appendChild(document.createTextNode(match[0]));
+    }
+    cursor = match.index + match[0].length;
+  }
+  parent.appendChild(document.createTextNode(text.slice(cursor)));
+}
+
+function makeBackToResultsButton() {
+  const back = document.createElement("button");
+  back.type = "button";
+  back.className = "document-back";
+  back.textContent = `← ${t("backToResults")}`;
+  back.addEventListener("click", closeDocumentDetail);
+  return back;
+}
+
+function renderDocumentLoading() {
+  const detail = document.createElement("article");
+  detail.className = "document-view";
+  const back = makeBackToResultsButton();
+  const status = document.createElement("p");
+  status.className = "document-status";
+  status.setAttribute("role", "status");
+  status.textContent = t("loadingDocument");
+  detail.append(back, status);
+  resultsEl.replaceChildren(detail);
+  back.focus();
+}
+
+function renderDocumentError() {
+  const detail = document.createElement("article");
+  detail.className = "document-view document-error";
+  const back = makeBackToResultsButton();
+  const message = document.createElement("p");
+  message.className = "document-status";
+  message.textContent = t("documentNotAvailable");
+  detail.append(back, message);
+  resultsEl.replaceChildren(detail);
+  back.focus();
+}
+
+function renderDocumentDetail(data) {
+  const detail = document.createElement("article");
+  detail.className = "document-view";
+  const back = makeBackToResultsButton();
+  const header = document.createElement("header");
+  header.className = "document-header";
+  const category = document.createElement("span");
+  category.className = "result-category";
+  category.textContent = data.category;
+  const title = document.createElement("h2");
+  title.className = "document-title";
+  title.textContent = data.title;
+  header.append(category, title);
+
+  const content = document.createElement("div");
+  content.className = "document-content";
+  const paragraphs = String(data.content || "").split(/\n\s*\n/).filter(Boolean);
+  (paragraphs.length ? paragraphs : [t("documentNotAvailable")]).forEach((paragraphText) => {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = paragraphText;
+    content.appendChild(paragraph);
+  });
+
+  detail.append(back, header, content);
+  resultsEl.replaceChildren(detail);
+  back.focus();
+}
+
+function closeDocumentDetail() {
+  if (!lastResultsData) return;
+  const documentId = activeDocument && activeDocument.id;
+  activeDocument = null;
+  renderResults(lastResultsData);
+  if (documentId !== undefined) {
+    window.requestAnimationFrame(() => {
+      const resultAction = resultsEl.querySelector(`[data-document-id="${documentId}"]`);
+      if (resultAction) resultAction.focus();
+    });
+  }
+}
+
+async function openDocument(docId) {
+  const documentState = { id: docId, data: null };
+  activeDocument = documentState;
+  renderDocumentLoading();
+  try {
+    const data = await requestJson(`/api/documents/${encodeURIComponent(docId)}`);
+    if (activeDocument !== documentState) return;
+    setConnectionState(true);
+    documentState.data = data;
+    renderDocumentDetail(data);
+  } catch {
+    if (activeDocument !== documentState) return;
+    setConnectionState(false, t("documentLoadFailed", { api: API_BASE }));
+    renderDocumentError();
+  }
+}
+
 function renderResults(data) {
+  lastResultsData = data;
   const resultCount = data.total_results === 1
     ? t("oneResult")
     : t("manyResults", { count: data.total_results });
@@ -314,11 +565,14 @@ function renderResults(data) {
   );
 
   if (data.results.length === 0) {
-    renderEmpty(t("noResults"));
+    renderNoResults();
     return;
   }
 
   const maxScore = Math.max(...data.results.map((r) => r.score), 1);
+  const explanation = document.createElement("p");
+  explanation.className = "ranking-explanation";
+  explanation.textContent = t("bm25Explanation");
   const resultNodes = data.results.map((result) => {
     const pct = Math.max(6, Math.round((result.score / maxScore) * 100));
     const article = document.createElement("article");
@@ -326,9 +580,13 @@ function renderResults(data) {
 
     const header = document.createElement("div");
     header.className = "result-head";
-    const title = document.createElement("span");
+    const title = document.createElement("button");
+    title.type = "button";
     title.className = "result-title";
+    title.dataset.documentId = String(result.doc_id);
     title.textContent = result.title;
+    title.setAttribute("aria-label", t("openDocumentNamed", { title: result.title }));
+    title.addEventListener("click", () => openDocument(result.doc_id));
     const category = document.createElement("span");
     category.className = "result-category";
     category.textContent = result.category;
@@ -336,7 +594,7 @@ function renderResults(data) {
 
     const snippet = document.createElement("p");
     snippet.className = "result-snippet";
-    snippet.textContent = result.snippet;
+    appendHighlightedText(snippet, result.snippet, lastQuery);
 
     const scoreRow = document.createElement("div");
     scoreRow.className = "score-row";
@@ -349,28 +607,47 @@ function renderResults(data) {
     const score = document.createElement("span");
     score.className = "score-value";
     score.textContent = `bm25 = ${result.score.toFixed(3)}`;
-    scoreRow.append(track, score);
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "result-open";
+    action.dataset.documentId = String(result.doc_id);
+    action.textContent = t("openDocument");
+    action.addEventListener("click", () => openDocument(result.doc_id));
+    scoreRow.append(track, score, action);
 
     article.append(header, snippet, scoreRow);
     return article;
   });
-  resultsEl.replaceChildren(...resultNodes);
+  resultsEl.replaceChildren(explanation, ...resultNodes);
 }
 
 async function runSearch(query) {
-  lastQuery = query;
+  const normalizedQuery = query.trim();
+  if (!normalizedQuery) {
+    showEmptyQueryFeedback();
+    return;
+  }
+
+  const requestId = ++latestSearchRequest;
+  activeDocument = null;
+  lastQuery = normalizedQuery;
+  setSearchPending(true);
   metaEl.textContent = t("searching");
   try {
-    const params = new URLSearchParams({ q: query, limit: "10" });
+    const params = new URLSearchParams({ q: normalizedQuery, limit: "10" });
     if (activeCategory) params.set("category", activeCategory);
     const data = await requestJson(`/api/search?${params.toString()}`);
+    if (requestId !== latestSearchRequest) return;
     setConnectionState(true);
     renderResults(data);
     loadStats();
   } catch {
+    if (requestId !== latestSearchRequest) return;
     metaEl.textContent = "";
     setConnectionState(false, t("searchFailed", { api: API_BASE }));
     renderEmpty(t("resultNeedsApi"));
+  } finally {
+    if (requestId === latestSearchRequest) setSearchPending(false);
   }
 }
 
@@ -391,6 +668,7 @@ form.addEventListener("submit", (e) => {
   e.preventDefault();
   const q = input.value.trim();
   if (q) runSearch(q);
+  else showEmptyQueryFeedback();
 });
 
 loadStats();
