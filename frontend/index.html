@@ -46,7 +46,8 @@
     </aside>
 
     <form id="search-form" class="search-bar" autocomplete="off">
-      <span class="prompt-glyph">&gt;</span>
+      <label class="visually-hidden" for="query" data-i18n="queryLabel">Search query</label>
+      <span class="prompt-glyph" aria-hidden="true">&gt;</span>
       <input
         id="query"
         type="text"
@@ -90,11 +91,11 @@
       </div>
     </details>
 
-    <div class="category-heading"><span class="section-label" data-i18n="categoryHeading">filter by topic</span><span class="category-hint" data-i18n="optional">optional</span></div>
-    <div id="categories" class="chips" aria-label="Categorías disponibles"></div>
+    <div class="category-heading"><span id="categories-label" class="section-label" data-i18n="categoryHeading">filter by topic</span><span class="category-hint" data-i18n="optional">optional</span></div>
+    <div id="categories" class="chips" aria-labelledby="categories-label"></div>
 
     <section id="results-meta" class="results-meta" aria-live="polite"></section>
-    <section id="results" class="results"></section>
+    <section id="results" class="results" aria-live="polite" aria-atomic="true"></section>
 
     <footer class="foot">
       <div class="foot-links">

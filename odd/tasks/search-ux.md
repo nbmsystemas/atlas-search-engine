@@ -46,12 +46,12 @@ Turn Atlas from a ranking demonstration into a practical search experience witho
 - Commit: pending.
 
 ### Task 3 — Harden search, filter, and recovery states
-- Status: pending
+- Status: done
 - Route: delegated direct writer.
 - Allowed edit surfaces: `frontend/index.html`, `frontend/script.js`, `frontend/style.css`.
-- Behavior: persistent input label, semantic filter state, explicit loading/busy state, empty-query validation, stale-response protection, clear recovery actions, and mobile result-header adaptation.
-- Checks: `node --check frontend/script.js`; `node /home/pabloezm/.pi/agent/skills/impeccable/scripts/detect.mjs --json frontend/index.html` (detector limitations must be recorded).
-- Forecast: ~170 authored lines.
+- Behavior: persistent input label, semantic filter state, explicit loading/busy state, empty-query validation, stale-response protection for searches and document details, clear recovery actions, localized context, and mobile result-header adaptation.
+- Checks: `node --check frontend/script.js` passed; detector completed with `[]` in degraded regex fallback; `git diff --check` passed; parent spot check also passed backend `21 passed, 1 warning`. LSP diagnostics found only pre-existing plaintext HTTP/hardcoded URL warnings and did not identify a new frontend correctness error.
+- Forecast: ~170 authored lines; actual source diff 146 lines.
 - Commit: pending.
 
 ## Acceptance criteria
@@ -65,8 +65,8 @@ Turn Atlas from a ranking demonstration into a practical search experience witho
 - Initial review: feedback materially valid; current UI has onboarding and technical transparency but weak practical result continuation.
 - Base commit: `c733421`.
 - Task 1 commit: `8ec6e0b`.
-- Task 2 commit: pending (after feature-document bookkeeping).
-- Task 3 commit: pending.
+- Task 2 commit: `5184bd5`.
+- Task 3 commit: pending (after feature-document bookkeeping).
 
 ## Key risks
 - The corpus currently exposes snippets through search; detail retrieval must not expose arbitrary filesystem paths or internal index structures.

@@ -17,6 +17,7 @@ const translations = {
     retry: "retry connection",
     healthcheck: "view healthcheck",
     searchButton: "search",
+    queryLabel: "Search query",
     placeholder: "try 'inverted index' or 'API security'…",
     quickStart: "start here",
     quickIndex: "inverted index",
@@ -53,9 +54,13 @@ const translations = {
     backendUnavailableDetail: "The frontend is published, but the API is not responding at {api}. The preloaded corpus lives in the backend, so searching starts when the service is online.",
     stillUnavailable: "The API is still not responding at {api}. If this is a Render preview, check that the service is running.",
     searching: "searching…",
+    emptyQuery: "Enter a query before searching.",
     resultNeedsApi: "The search needs the API to be available. Use “retry connection”.",
     searchFailed: "The API could not process this search at {api}. Try again when the backend is online.",
-    noResults: "No results. Try a different query.",
+    noResults: "No results for this search.",
+    noResultsContext: "Query: “{query}” · Topic: {category}",
+    clearSearch: "clear search",
+    retrySearch: "retry search",
     oneResult: "1 result",
     manyResults: "{count} results",
     statsDocs: " docs · ",
@@ -78,6 +83,7 @@ const translations = {
     retry: "reintentar conexión",
     healthcheck: "ver healthcheck",
     searchButton: "buscar",
+    queryLabel: "Consulta de búsqueda",
     placeholder: "probá con 'índice invertido' o 'seguridad API'…",
     quickStart: "empezá por acá",
     quickIndex: "índice invertido",
@@ -114,9 +120,13 @@ const translations = {
     backendUnavailableDetail: "El frontend está publicado, pero la API no responde en {api}. El corpus precargado vive en el backend, así que la búsqueda se habilita cuando el servicio está online.",
     stillUnavailable: "La API sigue sin responder en {api}. Si estás usando un preview de Render, revisá que el servicio esté activo.",
     searching: "buscando…",
+    emptyQuery: "Ingresá una consulta antes de buscar.",
     resultNeedsApi: "La búsqueda necesita que la API esté disponible. Usá “reintentar conexión”.",
     searchFailed: "La API no pudo procesar la búsqueda en {api}. Probá de nuevo cuando el backend esté online.",
-    noResults: "Sin resultados. Probá con otra consulta.",
+    noResults: "No hay resultados para esta búsqueda.",
+    noResultsContext: "Consulta: “{query}” · Tema: {category}",
+    clearSearch: "limpiar búsqueda",
+    retrySearch: "reintentar búsqueda",
     oneResult: "1 resultado",
     manyResults: "{count} resultados",
     statsDocs: " docs · ",
@@ -158,6 +168,7 @@ if (apiStatusLink) apiStatusLink.href = `${API_BASE}/api/health`;
 
 const form = document.getElementById("search-form");
 const input = document.getElementById("query");
+const submitButton = form.querySelector('button[type="submit"]');
 const resultsEl = document.getElementById("results");
 const metaEl = document.getElementById("results-meta");
 const statsEl = document.getElementById("stats");
@@ -173,6 +184,8 @@ let lastQuery = "";
 let lastResultsData = null;
 let activeDocument = null;
 let latestStats = null;
+let searchPending = false;
+let latestSearchRequest = 0;
 
 function apiUrl(path) {
   return `${API_BASE}${path}`;
@@ -189,6 +202,21 @@ function setConnectionState(isOnline, detail = "") {
   connectionMessage.textContent = detail || t("backendUnavailableDetail", { api: API_BASE });
 }
 
+function setSearchPending(pending) {
+  searchPending = pending;
+  submitButton.disabled = pending;
+  form.setAttribute("aria-busy", String(pending));
+  resultsEl.setAttribute("aria-busy", String(pending));
+}
+
+function updateCategorySelection() {
+  [...categoriesEl.children].forEach((chip) => {
+    const selected = (chip.dataset.category || null) === activeCategory;
+    chip.classList.toggle("active", selected);
+    chip.setAttribute("aria-pressed", String(selected));
+  });
+}
+
 function applyLanguage(language) {
   currentLanguage = language === "es" ? "es" : "en";
   document.documentElement.lang = currentLanguage;
@@ -197,6 +225,8 @@ function applyLanguage(language) {
     element.textContent = t(element.dataset.i18n);
   });
   input.placeholder = t("placeholder");
+  input.setAttribute("aria-label", t("queryLabel"));
+  if (searchPending) metaEl.textContent = t("searching");
   languageButtons.forEach((button) => {
     const isActive = button.dataset.language === currentLanguage;
     button.classList.toggle("active", isActive);
@@ -299,10 +329,11 @@ function makeChip(label, value) {
   chip.textContent = label;
   chip.className = "chip" + (activeCategory === value ? " active" : "");
   chip.type = "button";
+  chip.dataset.category = value || "";
+  chip.setAttribute("aria-pressed", String(activeCategory === value));
   chip.addEventListener("click", () => {
     activeCategory = value;
-    [...categoriesEl.children].forEach((c) => c.classList.remove("active"));
-    chip.classList.add("active");
+    updateCategorySelection();
     if (input.value.trim()) runSearch(input.value.trim());
   });
   return chip;
@@ -319,6 +350,61 @@ function renderEmpty(message) {
   empty.className = "empty-state";
   empty.textContent = message;
   resultsEl.replaceChildren(empty);
+}
+
+function renderNoResults() {
+  const empty = document.createElement("div");
+  empty.className = "empty-state";
+
+  const message = document.createElement("p");
+  message.textContent = t("noResults");
+  const context = document.createElement("p");
+  context.className = "empty-context";
+  context.textContent = t("noResultsContext", {
+    query: lastQuery,
+    category: activeCategory || t("allCategories"),
+  });
+
+  const actions = document.createElement("div");
+  actions.className = "empty-actions";
+  const clearButton = document.createElement("button");
+  clearButton.type = "button";
+  clearButton.className = "empty-action";
+  clearButton.textContent = t("clearSearch");
+  clearButton.addEventListener("click", clearSearch);
+  const retryButton = document.createElement("button");
+  retryButton.type = "button";
+  retryButton.className = "empty-action empty-action-primary";
+  retryButton.textContent = t("retrySearch");
+  retryButton.addEventListener("click", () => runSearch(lastQuery));
+  actions.append(clearButton, retryButton);
+  empty.append(message, context, actions);
+  resultsEl.replaceChildren(empty);
+}
+
+function clearSearch() {
+  latestSearchRequest += 1;
+  activeDocument = null;
+  lastQuery = "";
+  lastResultsData = null;
+  activeCategory = null;
+  input.value = "";
+  metaEl.textContent = "";
+  updateCategorySelection();
+  setSearchPending(false);
+  renderEmpty(t("emptyQuery"));
+  input.focus();
+}
+
+function showEmptyQueryFeedback() {
+  latestSearchRequest += 1;
+  activeDocument = null;
+  lastQuery = "";
+  lastResultsData = null;
+  metaEl.textContent = t("emptyQuery");
+  setSearchPending(false);
+  renderEmpty(t("emptyQuery"));
+  input.focus();
 }
 
 function normalizeToken(value) {
@@ -447,14 +533,17 @@ function closeDocumentDetail() {
 }
 
 async function openDocument(docId) {
-  activeDocument = { id: docId, data: null };
+  const documentState = { id: docId, data: null };
+  activeDocument = documentState;
   renderDocumentLoading();
   try {
     const data = await requestJson(`/api/documents/${encodeURIComponent(docId)}`);
+    if (activeDocument !== documentState) return;
     setConnectionState(true);
-    activeDocument.data = data;
+    documentState.data = data;
     renderDocumentDetail(data);
   } catch {
+    if (activeDocument !== documentState) return;
     setConnectionState(false, t("documentLoadFailed", { api: API_BASE }));
     renderDocumentError();
   }
@@ -476,7 +565,7 @@ function renderResults(data) {
   );
 
   if (data.results.length === 0) {
-    renderEmpty(t("noResults"));
+    renderNoResults();
     return;
   }
 
@@ -533,20 +622,32 @@ function renderResults(data) {
 }
 
 async function runSearch(query) {
+  const normalizedQuery = query.trim();
+  if (!normalizedQuery) {
+    showEmptyQueryFeedback();
+    return;
+  }
+
+  const requestId = ++latestSearchRequest;
   activeDocument = null;
-  lastQuery = query;
+  lastQuery = normalizedQuery;
+  setSearchPending(true);
   metaEl.textContent = t("searching");
   try {
-    const params = new URLSearchParams({ q: query, limit: "10" });
+    const params = new URLSearchParams({ q: normalizedQuery, limit: "10" });
     if (activeCategory) params.set("category", activeCategory);
     const data = await requestJson(`/api/search?${params.toString()}`);
+    if (requestId !== latestSearchRequest) return;
     setConnectionState(true);
     renderResults(data);
     loadStats();
   } catch {
+    if (requestId !== latestSearchRequest) return;
     metaEl.textContent = "";
     setConnectionState(false, t("searchFailed", { api: API_BASE }));
     renderEmpty(t("resultNeedsApi"));
+  } finally {
+    if (requestId === latestSearchRequest) setSearchPending(false);
   }
 }
 
@@ -567,6 +668,7 @@ form.addEventListener("submit", (e) => {
   e.preventDefault();
   const q = input.value.trim();
   if (q) runSearch(q);
+  else showEmptyQueryFeedback();
 });
 
 loadStats();
