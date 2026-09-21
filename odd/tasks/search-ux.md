@@ -66,7 +66,7 @@ Turn Atlas from a ranking demonstration into a practical search experience witho
 - Base commit: `c733421`.
 - Task 1 commit: `8ec6e0b`.
 - Task 2 commit: `5184bd5`.
-- Task 3 commit: pending (after feature-document bookkeeping).
+- Task 3 commit: `780acc5`.
 
 ## Key risks
 - The corpus currently exposes snippets through search; detail retrieval must not expose arbitrary filesystem paths or internal index structures.
