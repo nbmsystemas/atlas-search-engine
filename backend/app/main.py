@@ -17,7 +17,7 @@ import time
 from collections import deque
 from math import ceil
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -80,6 +80,17 @@ class StatsResponse(BaseModel):
     uptime_seconds: float
 
 
+class DocumentDetailResponse(BaseModel):
+    doc_id: int
+    title: str
+    category: str
+    content: str
+
+
+class ErrorResponse(BaseModel):
+    detail: str
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
@@ -107,6 +118,24 @@ def search(
         total_results=len(results),
         latency_ms=round(latency_ms, 3),
         results=[SearchResultOut(**r.__dict__) for r in results],
+    )
+
+
+@app.get(
+    "/api/documents/{doc_id}",
+    response_model=DocumentDetailResponse,
+    responses={404: {"model": ErrorResponse}},
+)
+def document_detail(doc_id: int):
+    doc = _index.documents.get(doc_id)
+    if doc is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    return DocumentDetailResponse(
+        doc_id=doc.doc_id,
+        title=doc.title,
+        category=doc.category,
+        content=doc.text,
     )
 
 

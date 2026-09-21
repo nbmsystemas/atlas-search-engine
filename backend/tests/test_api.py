@@ -26,6 +26,24 @@ def test_search_requires_query_param():
     assert resp.status_code == 422
 
 
+def test_document_detail_endpoint_returns_full_document():
+    resp = client.get("/api/documents/1")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["doc_id"] == 1
+    assert body["title"] == "Python y el zen de la simplicidad"
+    assert body["category"] == "general"
+    assert body["content"].startswith("Python prioriza la legibilidad del código")
+    assert body["content"].endswith("scripting.")
+    assert len(body["content"]) > 200
+
+
+def test_document_detail_endpoint_returns_typed_404_for_unknown_id():
+    resp = client.get("/api/documents/999999")
+    assert resp.status_code == 404
+    assert resp.json() == {"detail": "Document not found"}
+
+
 def test_categories_endpoint():
     resp = client.get("/api/categories")
     assert resp.status_code == 200
