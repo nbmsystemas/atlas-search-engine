@@ -18,6 +18,9 @@ Make the English quick searches `inverted index` and `semantic search` return th
 - [x] Configure Render for an always-on service.
 - [x] Run focused tests and verify the deployment configuration.
 
+## Commit evidence
+- `4ac44bd` — `fix(search): support bilingual quick queries`
+
 ## Verification evidence
 - `.venv/bin/pytest -q`: 25 passed, 1 warning.
 - `.venv/bin/pytest -q backend/tests/test_api.py`: 7 passed, 1 warning.
