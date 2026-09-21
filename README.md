@@ -158,6 +158,8 @@ The static frontend is live at <https://atlas.nbmsystemas.com>. It opens in Engl
 
 The frontend uses `http://localhost:8000` on local hosts and the Render service as its production fallback. You can override it before loading `script.js` with `window.ATLAS_API_BASE` or temporarily with `?api=https://your-backend.example.com`.
 
+Vercel Web Analytics is wired into the static page through `/_vercel/insights/script.js`. Enable **Analytics** for the project in the Vercel dashboard and redeploy; the dashboard then reports aggregate visitors, page views, countries, devices, and referrers. It does not identify visitors by name or email.
+
 ## Honest limitations and roadmap
 
 - The index is rebuilt at process startup; it is not persisted to disk yet.
