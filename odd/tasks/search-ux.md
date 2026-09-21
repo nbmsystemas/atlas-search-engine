@@ -71,6 +71,7 @@ Turn Atlas from a ranking demonstration into a practical search experience witho
 ## Review and delivery evidence
 - Work-unit commits: `8ec6e0b` (document details), `5184bd5` (actionable results), `780acc5` (interaction hardening); evidence bookkeeping commit: `3e7ecfc`.
 - Native review inspect was attempted against `main` with committed-only scope; the controller stopped with `managed_assets_outdated` even after the exact `gentle-ai sync --agent pi` continuation reported no sync actions. No review lineage was created, so native review outcome is unavailable for this candidate.
+- The branch contains 537 authored changed lines including task artifacts and docs, above the advisory 400-line slice budget; the three behavior commits are natural review slices, so a future PR should use chained slices rather than one oversized review.
 
 ## Key risks
 - The corpus currently exposes snippets through search; detail retrieval must not expose arbitrary filesystem paths or internal index structures.

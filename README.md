@@ -124,7 +124,7 @@ See [`docs/architecture.md`](docs/architecture.md) for the design decisions, dat
 | Core / API | Python 3.12 + FastAPI | Readable algorithms plus generated OpenAPI docs |
 | Frontend | Vanilla HTML/CSS/JavaScript | Zero runtime dependencies and fast loading |
 | Search core | Custom tokenizer, inverted index, and BM25 | Makes the complete ranking path inspectable |
-| Tests | pytest (19 tests) | Unit tests plus API integration coverage |
+| Tests | pytest (21 tests) | Unit tests plus API integration coverage |
 | CI | GitHub Actions | Tests and benchmark run on every push and pull request |
 | Local runtime | Docker Compose | One command to run the full stack |
 | Production | Render + Vercel | Docker backend plus static frontend |
@@ -133,7 +133,7 @@ See [`docs/architecture.md`](docs/architecture.md) for the design decisions, dat
 
 ```bash
 cd backend
-pytest -v                 # 19 passed
+pytest -v                 # 21 passed
 python benchmark.py       # benchmark output
 ```
 
